@@ -1,7 +1,9 @@
 import {RedisClient} from "redis";
 import {Tensor} from "./tensor";
+import {Model} from "./Model";
 import * as util from 'util';
 import {DTypeMap} from "./DType";
+
 
 export class RedisaiClient {
     private _sendCommand: any;
@@ -33,12 +35,56 @@ export class RedisaiClient {
 
     public tensorget(keName: string): Promise<any> {
         const args = [keName, "META", "VALUES"];
-        return this._sendCommand("ai.tensorget", args).then((reply) => {
-            const tensor = new Tensor(DTypeMap[reply[1]], reply[3], reply[5].map(Number));
-            return tensor;
+        return this._sendCommand("ai.tensorget", args).then((reply: any[]) => {
+            let dt = null;
+            let shape = null;
+            let values = null;
+            for (let i = 0; i < reply.length; i += 2) {
+                const key = reply[i];
+                const obj = reply[i + 1];
+                switch (key.toString()) {
+                    case "dtype":
+                        // @ts-ignore
+                        dt = DTypeMap[obj.toString()];
+                        break;
+                    case "shape":
+                        shape = obj;
+                        break;
+                    case "values":
+                        values = obj.map(Number);
+                        break;
+                }
+            }
+            if (dt == null || shape == null || values == null) {
+                throw Error("tensorget reply did not had the full elements to build the tensor")
+            }
+            return new Tensor(dt, shape, values);
         })
-            .catch((error) => {
+            .catch((error: any) => {
                 throw error;
             });
+    }
+
+    public modelset(keName: string, m: Model): Promise<any> {
+        const args = [keName, m.backend, m.device];
+        if (m.inputs.length > 0) {
+            args.push("INPUTS");
+            m.inputs.forEach(value => args.push(value));
+        }
+        if (m.outputs.length > 0) {
+            args.push("OUTPUTS");
+            m.outputs.forEach(value => args.push(value));
+        }
+        args.push("BLOB");
+        args.push(m.blob.toString())
+        return this._sendCommand("ai.modelset", args);
+    };
+
+    public modelrun(modelName: string, inputs: string[], outputs: string[]): Promise<any> {
+        const args = [modelName, "INPUTS"];
+        inputs.forEach(value => args.push(value));
+        args.push("OUTPUTS");
+        outputs.forEach(value => args.push(value));
+        return this._sendCommand("ai.modelrun", args);
     }
 }
