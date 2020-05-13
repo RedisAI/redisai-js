@@ -12,7 +12,6 @@
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
     "test": "tsc && nyc mocha --require ts-node/register --require source-map-support/register --recursive tests/** "
   },
   "repository": {
