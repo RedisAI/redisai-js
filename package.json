@@ -18,7 +18,7 @@
     "serving-tensors",
     "machine-learning"
   ],
-  "author": "filipe@redislabs.com",
+  "author": "filipecosta.90@gmail.com",
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/filipecosta90/redisai-js/issues"

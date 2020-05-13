@@ -1,4 +1,3 @@
-
 export enum Backend {
     // TF represents a TensorFlow backend
     TF = 'TF',

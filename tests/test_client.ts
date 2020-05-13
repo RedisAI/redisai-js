@@ -118,12 +118,12 @@ it("ai.modelrun positive testing", mochaAsync(async () => {
     const resultModelSet = await aiclient.modelset("mymodel", model);
     expect(resultModelSet).to.equal('OK');
 
-    const resultModelRun = await aiclient.modelrun("mymodel", ["tensorA","tensorB"], ["tensorC"]);
+    const resultModelRun = await aiclient.modelrun("mymodel", ["tensorA", "tensorB"], ["tensorC"]);
     expect(resultModelRun).to.equal('OK');
 
     const tensorC = await aiclient.tensorget("tensorC");
-    expect(tensorC.data[0]).to.closeTo(6.0,0.1);
-    expect(tensorC.data[1]).to.closeTo(15.0,0.1);
+    expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
 
     aiclient.end(true);
 }));
