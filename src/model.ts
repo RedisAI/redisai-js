@@ -1,7 +1,7 @@
 /**
  * Direct mapping to RedisAI Model
  */
-import { Backend } from './Backend';
+import { Backend } from './backend';
 
 export class Model {
   constructor(backend: Backend, device: string, inputs: string[], outputs: string[], blob: Buffer | undefined) {

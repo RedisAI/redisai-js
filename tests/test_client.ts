@@ -1,12 +1,12 @@
-import {RedisaiClient} from '../src/redisaiClient';
+import {Client} from '../src/client';
 import {createClient} from "redis";
 import {Tensor} from "../src/tensor";
-import {DType} from "../src/DType";
+import {Dtype} from "../src/dtype";
 import 'mocha';
 import {expect} from 'chai';
-import {Model} from "../src/Model";
+import {Model} from "../src/model";
 import * as fs from "fs";
-import {Backend} from "../src/Backend";
+import {Backend} from "../src/backend";
 
 const mochaAsync = (fn: any) => {
     return (done: any) => {
@@ -19,8 +19,8 @@ const mochaAsync = (fn: any) => {
 
 it("ai.tensorset positive testing without data", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [1, 1], null);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [1, 1], null);
     const result = await aiclient.tensorset("t1", tensor);
     expect(result).to.equal('OK');
     aiclient.end(true);
@@ -28,8 +28,8 @@ it("ai.tensorset positive testing without data", mochaAsync(async () => {
 
 it("ai.tensorset positive testing with data", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [1, 2], [3, 5]);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [1, 2], [3, 5]);
     const result = await aiclient.tensorset("t1", tensor);
     expect(result).to.equal('OK');
     aiclient.end(true);
@@ -38,8 +38,8 @@ it("ai.tensorset positive testing with data", mochaAsync(async () => {
 
 it("ai.tensorset negative testing", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [-1, 1], null);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [-1, 1], null);
     try {
         const result = await aiclient.tensorset("t1", tensor);
     } catch (e) {
@@ -51,8 +51,8 @@ it("ai.tensorset negative testing", mochaAsync(async () => {
 
 it("ai.tensorset/ai.tensorget positive testing with data", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [1, 2], [3, 5]);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [1, 2], [3, 5]);
     const result = await aiclient.tensorset("t1", tensor);
     expect(result).to.equal('OK');
     const tensorg = await aiclient.tensorget("t1");
@@ -65,8 +65,8 @@ it("ai.tensorset/ai.tensorget positive testing with data", mochaAsync(async () =
 
 it("ai.tensorset/ai.tensorget positive testing with default data", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [1, 2], null);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [1, 2], null);
     const result = await aiclient.tensorset("t1", tensor);
     expect(result).to.equal('OK');
     const tensorg = await aiclient.tensorget("t1");
@@ -79,7 +79,7 @@ it("ai.tensorset/ai.tensorget positive testing with default data", mochaAsync(as
 
 it("ai.tensorget negative testing", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
+    const aiclient = new Client(nativeClient);
     try {
         const result = await aiclient.tensorget("dontexist");
     } catch (e) {
@@ -91,7 +91,7 @@ it("ai.tensorget negative testing", mochaAsync(async () => {
 
 it("ai.modelset positive testing", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
+    const aiclient = new Client(nativeClient);
     let model_blob: Buffer = fs.readFileSync("./tests/test_data/graph.pb");
     const model = new Model(Backend.TF, "CPU", ["a", "b"], ["c"], model_blob);
     const result = await aiclient.modelset("m1", model);
@@ -101,14 +101,14 @@ it("ai.modelset positive testing", mochaAsync(async () => {
 
 it("ai.modelrun positive testing", mochaAsync(async () => {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
+    const aiclient = new Client(nativeClient);
 
 
-    const tensorA = new Tensor(DType.float32, [1, 2], [2, 3]);
+    const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
     const resultA = await aiclient.tensorset("tensorA", tensorA);
     expect(resultA).to.equal('OK');
 
-    const tensorB = new Tensor(DType.float32, [1, 2], [3, 5]);
+    const tensorB = new Tensor(Dtype.float32, [1, 2], [3, 5]);
     const resultB = await aiclient.tensorset("tensorB", tensorB);
     expect(resultB).to.equal('OK');
 

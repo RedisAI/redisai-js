@@ -15,15 +15,15 @@ npm install --save redisai-js
 ### ES6/TypeScript:
 
 ```typescript
-import {RedisaiClient} from 'redisai-js';
+import {Client} from 'redisai-js';
 import {createClient} from "redis";
 import {Tensor} from "../src/tensor";
-import {DType} from "../src/DType";
+import {Dtype} from "../src/Dtype";
 
 (async function() {
     const nativeClient = createClient();
-    const aiclient = new RedisaiClient(nativeClient);
-    const tensor = new Tensor(DType.float32, [1, 2], [3, 5]);
+    const aiclient = new Client(nativeClient);
+    const tensor = new Tensor(Dtype.float32, [1, 2], [3, 5]);
     const result = await aiclient.tensorset("t1", tensor);
     console.log(result);
     // prints: OK

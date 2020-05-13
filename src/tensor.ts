@@ -1,10 +1,10 @@
-import { DType } from './DType';
+import { Dtype } from './dtype';
 
 /**
  * Direct mapping to RedisAI Tensors - represents an n-dimensional array of values
  */
 export class Tensor {
-  constructor(dtype: DType, shape: number[], data: number[] | null) {
+  constructor(dtype: Dtype, shape: number[], data: number[] | null) {
     this._shape = shape;
     this._dtype = dtype;
     if (data != null) {
@@ -12,13 +12,13 @@ export class Tensor {
     }
   }
 
-  private _dtype: DType;
+  private _dtype: Dtype;
 
-  get dtype(): DType {
+  get dtype(): Dtype {
     return this._dtype;
   }
 
-  set dtype(value: DType) {
+  set dtype(value: Dtype) {
     this._dtype = value;
   }
 

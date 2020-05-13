@@ -1,10 +1,10 @@
 import { RedisClient } from 'redis';
 import { Tensor } from './tensor';
-import { Model } from './Model';
+import { Model } from './model';
 import * as util from 'util';
-import { DTypeMap } from './DType';
+import { DTypeMap } from './dtype';
 
-export class RedisaiClient {
+export class Client {
   private _sendCommand: any;
 
   constructor(client: RedisClient) {
