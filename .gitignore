@@ -1,6 +1,7 @@
 .vscode/
 .idea/
 
+
 coverage.txt
 
 .DS_Store
@@ -11,5 +12,6 @@ dump.rdb
 .vscode/
 public/*
 dist
+lib
 coverage/
 .nyc_output/

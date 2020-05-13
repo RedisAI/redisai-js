@@ -2,9 +2,16 @@
   "name": "redisai-js",
   "version": "0.0.3",
   "description": "A high-performance Typescript client for RedisAI",
-  "main": "dist/redisaiClient.js",
+  "main": "lib/redisaiClient.js",
   "scripts": {
-    "start": "tsc && node dist/redisaiClient.js",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" ",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags",
     "test": "tsc && nyc mocha --require ts-node/register --require source-map-support/register --recursive tests/** "
   },
   "repository": {
@@ -17,6 +24,9 @@
     "javascript-client",
     "serving-tensors",
     "machine-learning"
+  ],
+  "files": [
+    "lib/**/*"
   ],
   "author": "filipecosta.90@gmail.com",
   "license": "BSD-3-Clause",
@@ -36,9 +46,11 @@
     "chai": "^4.2.0",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
+    "prettier": "^2.0.5",
     "source-map-support": "^0.5.19",
     "ts-node": "^8.9.1",
     "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.8.3"
   }
 }
