@@ -1,7 +1,7 @@
-[![license](https://img.shields.io/github/license/filipecosta90/redisai-js.svg)](https://github.com/filipecosta90/redisai-js)
-[![CircleCI](https://circleci.com/gh/filipecosta90/redisai-js/tree/master.svg?style=svg)](https://circleci.com/gh/filipecosta90/redisai-js/tree/master)
+[![license](https://img.shields.io/github/license/RedisAI/redisai-js.svg)](https://github.com/RedisAI/redisai-js)
+[![CircleCI](https://circleci.com/gh/RedisAI/redisai-js/tree/master.svg?style=svg)](https://circleci.com/gh/RedisAI/redisai-js/tree/master)
 [![npm version](https://badge.fury.io/js/redisai-js.svg)](https://badge.fury.io/js/redisai-js)
-[![codecov](https://codecov.io/gh/filipecosta90/redisai-js/branch/master/graph/badge.svg)](https://codecov.io/gh/filipecosta90/redisai-js)
+[![codecov](https://codecov.io/gh/RedisAI/redisai-js/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisAI/redisai-js)
 
 ## A high performance node.js RedisAI client
 [![Forum](https://img.shields.io/badge/Forum-RedisAI-blue)](https://forum.redislabs.com/c/modules/redisai)
