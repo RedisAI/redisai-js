@@ -26,6 +26,11 @@ jobs:
       - run:
           name: test
           command: npm test
+
+      - run:
+          name: coverage
+          command: npm run coverage
+
       - store_artifacts:
           path: test-results.xml
           prefix: tests

@@ -12,7 +12,8 @@
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "test": "tsc && nyc mocha --require ts-node/register --require source-map-support/register --recursive tests/** "
+    "test": "tsc && nyc --reporter=html --reporter=text mocha --require ts-node/register --require source-map-support/register --recursive tests/**",
+    "coverage": "nyc report --reporter=text-lcov | ./node_modules/.bin/codecov --pipe --disable=gcov"
   },
   "repository": {
     "type": "git",
@@ -44,6 +45,8 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.4",
     "chai": "^4.2.0",
+    "codecov": "^3.6.5",
+    "coveralls": "^3.1.0",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
     "prettier": "^2.0.5",
