@@ -2,7 +2,7 @@ var redis = require('redis');
 var redisai = require('redisai-js');
 var fs = require("fs");
 
-const example_modelset_and_modelrun = async () => {
+(async () => {
     const nativeClient = redis.createClient();
     const aiclient = new redisai.Client(nativeClient);
     const tensorA = new redisai.Tensor(redisai.Dtype.float32, [1, 2], [2, 3]);
@@ -32,6 +32,4 @@ const example_modelset_and_modelrun = async () => {
     console.log(`AI.TENSORGET tC reply: datatype ${tensorC.dtype} shape [${tensorC.shape}] , data [${tensorC.data}]`);
 
     await aiclient.end();
-};
-
-example_modelset_and_modelrun();
+})();
