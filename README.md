@@ -121,6 +121,12 @@ Example of AI.SCRIPTSET and AI.SCRIPTRUN
 })();
 ```
 
+### Further examples
+
+The [RedisAI examples repo](https://github.com/RedisAI/redisai-examples) shows more advanced examples
+made using redisai-js under [js_client](https://github.com/RedisAI/redisai-examples/tree/master/js_client) folder. 
+
+
 ### Supported RedisAI Commands
 
 | Command | Recommended API and JSDoc  |
@@ -159,3 +165,6 @@ redisai-js is distributed under the BSD3 license - see [LICENSE](LICENSE)
 
 [npm-image]: https://img.shields.io/npm/v/express.svg
 [npm-url]: https://npmjs.org/package/redisgraph.js
+
+
+
