@@ -245,10 +245,18 @@ it(
       'myscript-wtag',
       'bar',
       ['tensorA', 'tensorB'],
-      ['tensorC'],
+      ['tensorD'],
     );
     expect(resultScriptRun).to.equal('OK');
     expect(resultScriptRunWithTag).to.equal('OK');
+
+    const tensorC = await aiclient.tensorget('tensorC');
+    expect(tensorC.data[0]).to.closeTo(5.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(8.0, 0.1);
+
+    const tensorD = await aiclient.tensorget('tensorD');
+    expect(tensorD.data[0]).to.closeTo(5.0, 0.1);
+    expect(tensorD.data[1]).to.closeTo(8.0, 0.1);
 
     aiclient.end(true);
   }),
