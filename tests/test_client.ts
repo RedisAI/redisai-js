@@ -172,6 +172,17 @@ it(
     expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
     expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
 
+    let modelInfo = await aiclient.info('mymodel-wtag');
+    expect(modelInfo.key).to.equal('mymodel-wtag');
+    expect(modelInfo.tag).to.equal('test_tag');
+    expect(modelInfo.calls).to.equal(1);
+
+    // reset stats and get new counter
+    const resultModelResetStat = await aiclient.infoResetStat('mymodel-wtag');
+    expect(resultModelResetStat).to.equal('OK');
+    modelInfo = await aiclient.info('mymodel-wtag');
+    expect(modelInfo.calls).to.equal(0);
+
     aiclient.end(true);
   }),
 );
@@ -237,7 +248,7 @@ it(
     const resultScriptSet = await aiclient.scriptset('myscript', script);
     expect(resultScriptSet).to.equal('OK');
 
-    const resultScriptSetWithTag = await aiclient.scriptset('myscript-wtag', script);
+    const resultScriptSetWithTag = await aiclient.scriptset('myscript-wtag', script2);
     expect(resultScriptSetWithTag).to.equal('OK');
 
     const resultScriptRun = await aiclient.scriptrun('myscript', 'bar', ['tensorA', 'tensorB'], ['tensorC']);
@@ -257,6 +268,21 @@ it(
     const tensorD = await aiclient.tensorget('tensorD');
     expect(tensorD.data[0]).to.closeTo(5.0, 0.1);
     expect(tensorD.data[1]).to.closeTo(8.0, 0.1);
+
+    const scriptInfo = await aiclient.info('myscript');
+    expect(scriptInfo.key).to.equal('myscript');
+    expect(scriptInfo.calls).to.equal(1);
+
+    let scriptInfoTag = await aiclient.info('myscript-wtag');
+    expect(scriptInfoTag.key).to.equal('myscript-wtag');
+    expect(scriptInfoTag.tag).to.equal('test_tag');
+    expect(scriptInfoTag.calls).to.equal(1);
+
+    // reset stats and get new counter
+    const resultScriptResetStat = await aiclient.infoResetStat('myscript-wtag');
+    expect(resultScriptResetStat).to.equal('OK');
+    scriptInfoTag = await aiclient.info('myscript-wtag');
+    expect(scriptInfoTag.calls).to.equal(0);
 
     aiclient.end(true);
   }),
@@ -294,6 +320,9 @@ it(
 
     const scriptOut = await aiclient.scriptget('myscript');
     expect(scriptOut.script).to.equal(script_str);
+
+    const scriptInfo = await aiclient.info('myscript');
+    expect(scriptInfo.key).to.equal('myscript');
     aiclient.end(true);
   }),
 );

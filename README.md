@@ -139,7 +139,7 @@ AI.SCRIPTRUN | scriptrun
 AI._SCRIPTSCAN | N/A  
 AI.DAGRUN | N/A
 AI.DAGRUN_RO | N/A
-AI.INFO | 
+AI.INFO | info and infoResetStat (for resetting stats)
 AI.CONFIG * | N/A
 
 
