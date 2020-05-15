@@ -69,7 +69,7 @@ export class Client {
   }
 
   public modelset(keName: string, m: Model): Promise<any> {
-    let args: any[] = [keName, m.backend.toString(), m.device];
+    const args: any[] = [keName, m.backend.toString(), m.device];
     if (m.tag !== undefined) {
       args.push('TAG');
       args.push(m.tag.toString());
