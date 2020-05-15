@@ -1,12 +1,12 @@
 {
   "name": "redisai-js",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A high-performance Typescript client for RedisAI",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\"  \"tests/**/*.ts\" \"examples/**/*.js\" ",
+    "format": "prettier --write \"src/**/*.ts\"  \"tests/**/*.ts\" ",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
