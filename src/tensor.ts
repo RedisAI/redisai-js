@@ -4,6 +4,12 @@ import { Dtype } from './dtype';
  * Direct mapping to RedisAI Tensors - represents an n-dimensional array of values
  */
 export class Tensor {
+  /**
+   *  Creates a tensor - represents an n-dimensional array of values
+   * @param dtype the tensor's data type
+   * @param shape one or more dimensions, or the number of elements per axis, for the tensor
+   * @param data numeric data provided by one or more subsequent val arguments
+   */
   constructor(dtype: Dtype, shape: number[], data: number[] | null) {
     this._shape = shape;
     this._dtype = dtype;

@@ -86,6 +86,28 @@ var fs = require("fs");
 ```
 
 
+### Supported RedisAI Commands
+
+| Command | Recommended API and JSDoc  |
+| :---          |  ----: |
+AI.TENSORSET | tensorset
+AI.TENSORGET | tensorget
+AI.MODELSET | modelset
+AI.MODELGET | modelget
+AI.MODELDEL | modeldet
+AI.MODELRUN | modelrun
+AI._MODELSCAN | N/A
+AI.SCRIPTSET | scriptset
+AI.SCRIPTGET | scriptget
+AI.SCRIPTDEL | scriptdel
+AI.SCRIPTRUN | scriptrun
+AI._SCRIPTSCAN | N/A  
+AI.DAGRUN | N/A
+AI.DAGRUN_RO | N/A
+AI.INFO | 
+AI.CONFIG * | N/A
+
+
 ### Running tests
 
 A simple test suite is provided, and can be run with:
