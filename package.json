@@ -36,14 +36,15 @@
   },
   "homepage": "https://github.com/RedisAI/redisai-js#readme",
   "dependencies": {
-    "@types/redis": "^2.8.18",
-    "redis": "^3.0.2"
+    "redis": "^3.0.2",
+    "@types/redis": "^2.8.21"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.4",
+    "@types/redis": "^2.8.21",
     "chai": "^4.2.0",
     "codecov": "^3.6.5",
     "coveralls": "^3.1.0",

@@ -1,4 +1,4 @@
-import { RedisClient } from 'redis';
+import { Callback, RedisClient } from 'redis';
 import { Tensor } from './tensor';
 import { Model } from './model';
 import * as util from 'util';
@@ -26,7 +26,7 @@ export class Client {
   }
 
   public tensorset(keName: string, t: Tensor): Promise<any> {
-    const args = [keName, t.dtype];
+    const args: any[] = [keName, t.dtype];
     t.shape.forEach((value) => args.push(value.toString()));
     if (t.data != null) {
       args.push('VALUES');
@@ -36,7 +36,7 @@ export class Client {
   }
 
   public tensorget(keName: string): Promise<any> {
-    const args = [keName, 'META', 'VALUES'];
+    const args: any[] = [keName, 'META', 'VALUES'];
     return this._sendCommand('ai.tensorget', args)
       .then((reply: any[]) => {
         let dt = null;
@@ -69,7 +69,7 @@ export class Client {
   }
 
   public modelset(keName: string, m: Model): Promise<any> {
-    const args = [keName, m.backend, m.device];
+    let args: any[] = [keName, m.backend.toString(), m.device];
     if (m.tag !== undefined) {
       args.push('TAG');
       args.push(m.tag.toString());
@@ -83,12 +83,12 @@ export class Client {
       m.outputs.forEach((value) => args.push(value));
     }
     args.push('BLOB');
-    args.push(m.blob.toString());
+    args.push(m.blob);
     return this._sendCommand('ai.modelset', args);
   }
 
   public modelrun(modelName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args = [modelName, 'INPUTS'];
+    const args: any[] = [modelName, 'INPUTS'];
     inputs.forEach((value) => args.push(value));
     args.push('OUTPUTS');
     outputs.forEach((value) => args.push(value));
@@ -96,12 +96,12 @@ export class Client {
   }
 
   public modeldel(modelName: string): Promise<any> {
-    const args = [modelName];
+    const args: any[] = [modelName];
     return this._sendCommand('ai.modeldel', args);
   }
 
   public modelget(modelName: string): Promise<any> {
-    const args = [modelName, 'META', 'BLOB'];
+    const args: any[] = [modelName, 'META', 'BLOB'];
     return this._sendCommand('ai.modelget', args)
       .then((reply: any[]) => {
         let backend = null;
@@ -143,7 +143,7 @@ export class Client {
   }
 
   public scriptset(keName: string, s: Script): Promise<any> {
-    const args = [keName, s.device];
+    const args: any[] = [keName, s.device];
     if (s.tag !== undefined) {
       args.push('TAG');
       args.push(s.tag);
@@ -154,7 +154,7 @@ export class Client {
   }
 
   public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args = [scriptName, functionName, 'INPUTS'];
+    const args: any[] = [scriptName, functionName, 'INPUTS'];
     inputs.forEach((value) => args.push(value));
     args.push('OUTPUTS');
     outputs.forEach((value) => args.push(value));
@@ -162,12 +162,12 @@ export class Client {
   }
 
   public scriptdel(scriptName: string): Promise<any> {
-    const args = [scriptName];
+    const args: any[] = [scriptName];
     return this._sendCommand('ai.scriptdel', args);
   }
 
   public scriptget(scriptName: string): Promise<any> {
-    const args = [scriptName, 'META', 'SOURCE'];
+    const args: any[] = [scriptName, 'META', 'SOURCE'];
     return this._sendCommand('ai.scriptget', args)
       .then((reply: any[]) => {
         let device = null;
@@ -208,7 +208,7 @@ export class Client {
    * @param keyName
    */
   public infoResetStat(keyName: string): Promise<any> {
-    const args = [keyName, 'RESETSTAT'];
+    const args: any[] = [keyName, 'RESETSTAT'];
     return this._sendCommand('ai.info', args);
   }
 
@@ -217,7 +217,7 @@ export class Client {
    * @param keyName
    */
   public info(keyName: string): Promise<any> {
-    const args = [keyName];
+    const args: any[] = [keyName];
     return this._sendCommand('ai.info', args)
       .then((reply: any[]) => {
         let keystr: string | null = null;

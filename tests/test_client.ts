@@ -103,13 +103,52 @@ it(
 );
 
 it(
+  'ai.modelset modelOnnx linear_iris testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const modelBlobOnnx: Buffer = fs.readFileSync('./tests/test_data/linear_iris.onnx');
+    const modelOnnx = new Model(Backend.ONNX, 'CPU', [], [], modelBlobOnnx);
+    const result = await aiclient.modelset('modelOnnx', modelOnnx);
+    expect(result).to.equal('OK');
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.modelset modelOnnx mnist testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const modelBlobOnnx: Buffer = fs.readFileSync('./tests/test_data/mnist.onnx');
+    const modelOnnx = new Model(Backend.ONNX, 'CPU', [], [], modelBlobOnnx);
+    const result = await aiclient.modelset('mnist', modelOnnx);
+    expect(result).to.equal('OK');
+    aiclient.end(true);
+  }),
+);
+
+it(
   'ai.modelset positive testing',
   mochaAsync(async () => {
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
-    let model_blob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], model_blob);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
     const result = await aiclient.modelset('m1', model);
+    expect(result).to.equal('OK');
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.modelset tiny-yolo-voc testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/tiny-yolo-voc.pb');
+    const model = new Model(Backend.TF, 'CPU', ['input'], ['output'], modelBlob);
+    const result = await aiclient.modelset('tiny-yolo-voc', model);
     expect(result).to.equal('OK');
     aiclient.end(true);
   }),
@@ -129,8 +168,8 @@ it(
     const resultB = await aiclient.tensorset('tensorB', tensorB);
     expect(resultB).to.equal('OK');
 
-    let model_blob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], model_blob);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
     const resultModelSet = await aiclient.modelset('mymodel', model);
     expect(resultModelSet).to.equal('OK');
 
@@ -159,8 +198,8 @@ it(
     const resultB = await aiclient.tensorset('tensorB', tensorB);
     expect(resultB).to.equal('OK');
 
-    let model_blob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], model_blob);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
     model.tag = 'test_tag';
     const resultModelSet = await aiclient.modelset('mymodel-wtag', model);
     expect(resultModelSet).to.equal('OK');
@@ -193,8 +232,8 @@ it(
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
 
-    let model_blob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], model_blob);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
     model.tag = 'test_tag';
     const resultModelSet = await aiclient.modelset('mymodel-wtag', model);
     expect(resultModelSet).to.equal('OK');
@@ -211,14 +250,14 @@ it(
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
 
-    let model_blob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], model_blob);
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
     model.tag = 'test_tag';
     const resultModelSet = await aiclient.modelset('mymodel', model);
     expect(resultModelSet).to.equal('OK');
 
     const modelOut = await aiclient.modelget('mymodel');
-    expect(modelOut.blob.toString()).to.equal(model_blob.toString());
+    expect(modelOut.blob.toString()).to.equal(modelBlob.toString());
     aiclient.end(true);
   }),
 );
@@ -229,8 +268,8 @@ it(
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
 
-    let script_file_str: string = fs.readFileSync('./tests/test_data/script.txt').toString();
-    let script_str: string = 'def bar(a, b):\n    return a + b\n';
+    const scriptFileStr: string = fs.readFileSync('./tests/test_data/script.txt').toString();
+    const scriptStr: string = 'def bar(a, b):\n    return a + b\n';
 
     const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
     const resultA = await aiclient.tensorset('tensorA', tensorA);
@@ -240,9 +279,9 @@ it(
     const resultB = await aiclient.tensorset('tensorB', tensorB);
     expect(resultB).to.equal('OK');
 
-    const script = new Script('CPU', script_file_str);
+    const script = new Script('CPU', scriptFileStr);
 
-    const script2 = new Script('CPU', script_str);
+    const script2 = new Script('CPU', scriptStr);
     script2.tag = 'test_tag';
 
     const resultScriptSet = await aiclient.scriptset('myscript', script);
@@ -294,8 +333,8 @@ it(
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
 
-    let script_str: string = 'def bar(a, b):\n    return a + b\n';
-    const script = new Script('CPU', script_str);
+    const scriptStr: string = 'def bar(a, b):\n    return a + b\n';
+    const script = new Script('CPU', scriptStr);
 
     const resultScriptSet = await aiclient.scriptset('myscript', script);
     expect(resultScriptSet).to.equal('OK');
@@ -312,14 +351,14 @@ it(
     const nativeClient = createClient();
     const aiclient = new Client(nativeClient);
 
-    let script_str: string = 'def bar(a, b):\n    return a + b\n';
-    const script = new Script('CPU', script_str);
+    const scriptStr: string = 'def bar(a, b):\n    return a + b\n';
+    const script = new Script('CPU', scriptStr);
 
     const resultScriptSet = await aiclient.scriptset('myscript', script);
     expect(resultScriptSet).to.equal('OK');
 
     const scriptOut = await aiclient.scriptget('myscript');
-    expect(scriptOut.script).to.equal(script_str);
+    expect(scriptOut.script).to.equal(scriptStr);
 
     const scriptInfo = await aiclient.info('myscript');
     expect(scriptInfo.key).to.equal('myscript');

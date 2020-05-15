@@ -4,7 +4,7 @@ export enum Backend {
   // Torch represents a Torch backend
   Torch = 'TORCH',
   // ONNX represents an ONNX backend
-  ONNX = 'ORT',
+  ONNX = 'ONNX',
   // TFLite represents a TensorFlow backend
   TFLite = 'TFLITE',
 }
