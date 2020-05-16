@@ -8,6 +8,9 @@ import { Model } from '../src/model';
 import * as fs from 'fs';
 import { Backend } from '../src/backend';
 import { Script } from '../src/script';
+import { Helpers } from '../src';
+// tslint:disable-next-line:no-var-requires
+const Jimp = require('jimp');
 
 const mochaAsync = (fn: any) => {
   return (done: any) => {
@@ -84,6 +87,25 @@ it(
     for (let i = 0; i < tensorg.data.length; i++) {
       expect(tensorg.data[i]).to.equal(0);
     }
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.tensorset/ai.tensorget positive testing with default data',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const inputImage = await Jimp.read('./tests/test_data/panda-224x224.jpg');
+    const imageWidth = 224;
+    const imageHeight = 224;
+    const image = inputImage.cover(imageWidth, imageHeight);
+    const helpers = new Helpers();
+    const normalized = helpers.normalizeRGB(image.bitmap.data);
+    const buffer = Buffer.from(normalized.buffer);
+    const tensor = new Tensor(Dtype.float32, [imageWidth, imageHeight, 3], buffer);
+    const result = await aiclient.tensorset('tensor-image', tensor);
+    expect(result).to.equal('OK');
     aiclient.end(true);
   }),
 );

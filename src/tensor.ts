@@ -10,7 +10,7 @@ export class Tensor {
    * @param shape one or more dimensions, or the number of elements per axis, for the tensor
    * @param data numeric data provided by one or more subsequent val arguments
    */
-  constructor(dtype: Dtype, shape: number[], data: number[] | null) {
+  constructor(dtype: Dtype, shape: number[], data: Buffer | number[] | null) {
     this._shape = shape;
     this._dtype = dtype;
     if (data != null) {
@@ -38,13 +38,13 @@ export class Tensor {
     this._shape = value;
   }
 
-  private _data: number[] | null;
+  private _data: Buffer | number[];
 
-  get data(): number[] | null {
+  get data(): Buffer | number[] | null {
     return this._data;
   }
 
-  set data(value: number[] | null) {
+  set data(value: Buffer | number[] | null) {
     this._data = value;
   }
 }

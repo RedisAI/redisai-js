@@ -21,7 +21,7 @@ export class Helpers {
    * TODO: document
    * @param buffer
    */
-  normalizeRGB(buffer: Float32Array): Float32Array {
+  normalizeRGB(buffer: any): Float32Array {
     const npixels = buffer.length / 4;
     const out = new Float32Array(npixels * 3);
 

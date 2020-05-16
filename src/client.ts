@@ -1,4 +1,4 @@
-import { Callback, RedisClient } from 'redis';
+import { RedisClient } from 'redis';
 import { Tensor } from './tensor';
 import { Model } from './model';
 import * as util from 'util';
@@ -29,8 +29,13 @@ export class Client {
     const args: any[] = [keName, t.dtype];
     t.shape.forEach((value) => args.push(value.toString()));
     if (t.data != null) {
-      args.push('VALUES');
-      t.data.forEach((value) => args.push(value.toString()));
+      if (t.data instanceof Buffer) {
+        args.push('BLOB');
+        args.push(t.data);
+      } else {
+        args.push('VALUES');
+        t.data.forEach((value) => args.push(value.toString()));
+      }
     }
     return this._sendCommand('ai.tensorset', args);
   }
