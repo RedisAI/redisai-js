@@ -48,4 +48,43 @@ export class Script {
   set script(value: string) {
     this._script = value;
   }
+
+  static NewScriptFromScriptGetReply(reply: any[]) {
+    let device = null;
+    let tag = null;
+    let source = null;
+    for (let i = 0; i < reply.length; i += 2) {
+      const key = reply[i];
+      const obj = reply[i + 1];
+      switch (key.toString()) {
+        case 'device':
+          // @ts-ignore
+          device = obj.toString();
+          break;
+        case 'tag':
+          tag = obj.toString();
+          break;
+        case 'source':
+          source = obj.toString();
+          break;
+      }
+    }
+    if (device == null || source == null) {
+      const missingArr = [];
+      if (device == null) {
+        missingArr.push('device');
+      }
+      if (source == null) {
+        missingArr.push('source');
+      }
+      throw Error(
+        'AI.SCRIPTGET reply did not had the full elements to build the Script. Missing ' + missingArr.join(',') + '.',
+      );
+    }
+    const script = new Script(device, source);
+    if (tag !== null) {
+      script.tag = tag;
+    }
+    return script;
+  }
 }

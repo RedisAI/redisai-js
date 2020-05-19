@@ -8,7 +8,8 @@ import { Model } from '../src/model';
 import * as fs from 'fs';
 import { Backend } from '../src/backend';
 import { Script } from '../src/script';
-import { Helpers } from '../src';
+import { Helpers, Stats } from '../src';
+import util from 'util';
 // tslint:disable-next-line:no-var-requires
 const Jimp = require('jimp');
 
@@ -19,6 +20,17 @@ const mochaAsync = (fn: any) => {
     });
   };
 };
+
+it(
+  'test vanilla client access',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const result = await util.promisify(aiclient.client.set).bind(aiclient.client)('redisai-js-foo', 'foo');
+    expect(result).to.equal('OK');
+    aiclient.end(true);
+  }),
+);
 
 it(
   'ai.tensorset positive testing without data',
@@ -88,6 +100,52 @@ it(
       expect(tensorg.data[i]).to.equal(0);
     }
     aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.tensorget positive/negative testing on response parsing',
+  mochaAsync(async () => {
+    // empty array reply
+    try {
+      const mockedTensorGetReply = [];
+      const result = await Tensor.NewTensorFromTensorGetReply(mockedTensorGetReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.TENSORGET reply did not had the full elements to build the Tensor. Missing dtype,shape,values.',
+      );
+    }
+    // missing dtype
+    try {
+      const mockedTensorGetReply2 = ['shape', [1], 'values', [10]];
+      const result12 = await Tensor.NewTensorFromTensorGetReply(mockedTensorGetReply2);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.TENSORGET reply did not had the full elements to build the Tensor. Missing dtype.',
+      );
+    }
+    // missing shape
+    try {
+      const mockedTensorGetReply3 = ['dtype', 'FLOAT', 'values', [10]];
+      const result3 = await Tensor.NewTensorFromTensorGetReply(mockedTensorGetReply3);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.TENSORGET reply did not had the full elements to build the Tensor. Missing shape.',
+      );
+    }
+    // missing values
+    try {
+      const mockedTensorGetReply4 = ['dtype', 'FLOAT', 'shape', [1]];
+      const result4 = await Tensor.NewTensorFromTensorGetReply(mockedTensorGetReply4);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.TENSORGET reply did not had the full elements to build the Tensor. Missing values.',
+      );
+    }
+    // ok
+    const mockedTensorGetReply5 = ['dtype', 'FLOAT', 'shape', [1], 'values', [10]];
+    const tensor = await Tensor.NewTensorFromTensorGetReply(mockedTensorGetReply5);
+    expect(tensor.data[0]).to.closeTo(10.0, 0.1);
   }),
 );
 
@@ -285,6 +343,48 @@ it(
 );
 
 it(
+  'ai.modelget negative testing on response parsing',
+  mochaAsync(async () => {
+    // empty array reply
+    try {
+      const mockedReply = [];
+      const result = await Model.NewModelFromModelGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.MODELGET reply did not had the full elements to build the Model. Missing backend,device,blob.',
+      );
+    }
+    // missing blob
+    try {
+      const mockedReply = ['backend', 'TF', 'device', 'CPU'];
+      const result = await Model.NewModelFromModelGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.MODELGET reply did not had the full elements to build the Model. Missing blob.',
+      );
+    }
+    // missing backend
+    try {
+      const mockedReply = ['blob', [], 'device', 'CPU'];
+      const result = await Model.NewModelFromModelGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.MODELGET reply did not had the full elements to build the Model. Missing backend.',
+      );
+    }
+    // missing device
+    try {
+      const mockedReply = ['blob', [], 'backend', 'TF'];
+      const result = await Model.NewModelFromModelGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.MODELGET reply did not had the full elements to build the Model. Missing device.',
+      );
+    }
+  }),
+);
+
+it(
   'ai.scriptrun with tag positive testing',
   mochaAsync(async () => {
     const nativeClient = createClient();
@@ -384,6 +484,141 @@ it(
 
     const scriptInfo = await aiclient.info('myscript');
     expect(scriptInfo.key).to.equal('myscript');
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.scriptget negative testing on response parsing',
+  mochaAsync(async () => {
+    // empty array reply
+    try {
+      const mockedReply = [];
+      const result = await Script.NewScriptFromScriptGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.SCRIPTGET reply did not had the full elements to build the Script. Missing device,source.',
+      );
+    }
+    // missing source
+    try {
+      const mockedReply = ['device', 'CPU'];
+      const result = await Script.NewScriptFromScriptGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.SCRIPTGET reply did not had the full elements to build the Script. Missing source.',
+      );
+    }
+    // missing device
+    try {
+      const mockedReply = ['source', ''];
+      const result = await Script.NewScriptFromScriptGetReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.SCRIPTGET reply did not had the full elements to build the Script. Missing device.',
+      );
+    }
+  }),
+);
+
+it(
+  'ai.info negative testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    try {
+      const result = await aiclient.info('dontexist');
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR cannot find run info for key');
+    }
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.info negative testing on response parsing',
+  mochaAsync(async () => {
+    // empty array reply
+    try {
+      const mockedReply = [];
+      const result = await Stats.NewStatsFromInfoReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.INFO reply did not had the full elements to build the Stats. Missing key,type,backend,device.',
+      );
+    }
+    // missing device
+    try {
+      const mockedReply = ['key', 'a', 'type', 'model', 'backend', 'TF'];
+      const result = await Stats.NewStatsFromInfoReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.INFO reply did not had the full elements to build the Stats. Missing device.',
+      );
+    }
+    // missing backend
+    try {
+      const mockedReply = ['key', 'a', 'type', 'model', 'device', 'CPU'];
+      const result = await Stats.NewStatsFromInfoReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.INFO reply did not had the full elements to build the Stats. Missing backend.',
+      );
+    }
+    // missing type
+    try {
+      const mockedReply = ['key', 'a', 'backend', 'TF', 'device', 'CPU'];
+      const result = await Stats.NewStatsFromInfoReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.INFO reply did not had the full elements to build the Stats. Missing type.',
+      );
+    }
+    // missing key
+    try {
+      const mockedReply = ['type', 'script', 'backend', 'TF', 'device', 'CPU'];
+      const result = await Stats.NewStatsFromInfoReply(mockedReply);
+    } catch (e) {
+      expect(e.toString()).to.equal(
+        'Error: AI.INFO reply did not had the full elements to build the Stats. Missing key.',
+      );
+    }
+
+    const positiveMockedReply = ['key', 'key1', 'type', 'script', 'backend', 'TF', 'device', 'CPU'];
+    const stats = await Stats.NewStatsFromInfoReply(positiveMockedReply);
+    expect(stats.key).to.equal('key1');
+    expect(stats.type).to.equal('script');
+    expect(stats.backend).to.equal(Backend.TF);
+    expect(stats.device).to.equal('CPU');
+    expect(stats.tag).to.equal(undefined);
+    expect(stats.calls).to.equal(0);
+  }),
+);
+
+it(
+  'ai.scriptget negative testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    try {
+      const result = await aiclient.scriptget('dontexist');
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR script key is empty');
+    }
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.modelget negative testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    try {
+      const result = await aiclient.modelget('dontexist');
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
+    }
     aiclient.end(true);
   }),
 );
