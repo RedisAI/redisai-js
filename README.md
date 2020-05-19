@@ -7,8 +7,7 @@
 [![Forum](https://img.shields.io/badge/Forum-RedisAI-blue)](https://forum.redislabs.com/c/modules/redisai)
 [![Gitter](https://badges.gitter.im/RedisLabs/RedisAI.svg)](https://gitter.im/RedisLabs/RedisAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-You can use this client to query RedisAI using plain Javascript.
-You can also do the same thing in a type-safe way as well, since redisai-js comes with its own Typescript type definitions built-in. 
+You can use this client to query RedisAI using plain Javascript, or in a type-safe manner using Typescript, since redisai-js comes with its own type definitions built-in. 
 
 ## Installation
 
