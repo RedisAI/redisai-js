@@ -1,7 +1,7 @@
 /**
  * Statistics about model/script types
  */
-import { Backend } from './backend';
+import { Backend, BackendMap } from './backend';
 
 export class Stats {
   /**
@@ -121,5 +121,87 @@ export class Stats {
    */
   set tag(value: string | undefined) {
     this._tag = value;
+  }
+
+  static NewStatsFromInfoReply(reply: any[]) {
+    let keystr: string | null = null;
+    let type: string | null = null;
+    let backend: Backend | null = null;
+    let device: string | null = null;
+    let tag: string | null = null;
+    let duration: number | null = null;
+    let samples: number | null = null;
+    let calls: number | null = null;
+    let errors: number | null = null;
+    for (let i = 0; i < reply.length; i += 2) {
+      const key = reply[i];
+      const obj = reply[i + 1];
+      switch (key.toString()) {
+        case 'key':
+          keystr = obj.toString();
+          break;
+        case 'type':
+          type = obj.toString();
+          break;
+        case 'backend':
+          // @ts-ignore
+          backend = BackendMap[obj.toString()];
+          break;
+        case 'device':
+          // @ts-ignore
+          device = obj.toString();
+          break;
+        case 'tag':
+          tag = obj.toString();
+          break;
+        case 'duration':
+          duration = obj;
+          break;
+        case 'samples':
+          samples = obj;
+          break;
+        case 'calls':
+          calls = obj;
+          break;
+        case 'errors':
+          errors = obj;
+          break;
+      }
+    }
+    if (keystr == null || type == null || backend == null || device == null) {
+      const missingArr = [];
+      if (keystr == null) {
+        missingArr.push('key');
+      }
+      if (type == null) {
+        missingArr.push('type');
+      }
+      if (backend == null) {
+        missingArr.push('backend');
+      }
+      if (device == null) {
+        missingArr.push('device');
+      }
+      throw Error(
+        'AI.INFO reply did not had the full elements to build the Stats. Missing ' + missingArr.join(',') + '.',
+      );
+    }
+    const stat = new Stats(keystr, type, backend, device);
+    if (tag !== null) {
+      stat.tag = tag;
+    }
+    if (duration !== null) {
+      stat.duration = duration;
+    }
+    if (samples !== null) {
+      stat.samples = samples;
+    }
+    if (calls !== null) {
+      stat.calls = calls;
+    }
+    if (errors !== null) {
+      stat.errors = errors;
+    }
+    return stat;
   }
 }

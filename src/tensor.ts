@@ -1,4 +1,4 @@
-import { Dtype } from './dtype';
+import { Dtype, DTypeMap } from './dtype';
 
 /**
  * Direct mapping to RedisAI Tensors - represents an n-dimensional array of values
@@ -46,5 +46,42 @@ export class Tensor {
 
   set data(value: Buffer | number[] | null) {
     this._data = value;
+  }
+
+  static NewTensorFromTensorGetReply(reply: any[]) {
+    let dt = null;
+    let shape = null;
+    let values = null;
+    for (let i = 0; i < reply.length; i += 2) {
+      const key = reply[i];
+      const obj = reply[i + 1];
+      switch (key.toString()) {
+        case 'dtype':
+          dt = DTypeMap[obj.toString()];
+          break;
+        case 'shape':
+          shape = obj;
+          break;
+        case 'values':
+          values = obj.map(Number);
+          break;
+      }
+    }
+    if (dt == null || shape == null || values == null) {
+      const missingArr = [];
+      if (dt == null) {
+        missingArr.push('dtype');
+      }
+      if (shape == null) {
+        missingArr.push('shape');
+      }
+      if (values == null) {
+        missingArr.push('values');
+      }
+      throw Error(
+        'AI.TENSORGET reply did not had the full elements to build the Tensor. Missing ' + missingArr.join(',') + '.',
+      );
+    }
+    return new Tensor(dt, shape, values);
   }
 }

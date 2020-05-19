@@ -2,9 +2,7 @@ import { RedisClient } from 'redis';
 import { Tensor } from './tensor';
 import { Model } from './model';
 import * as util from 'util';
-import { DTypeMap } from './dtype';
 import { Script } from './script';
-import { Backend, BackendMap } from './backend';
 import { Stats } from './stats';
 
 export class Client {
@@ -44,29 +42,7 @@ export class Client {
     const args: any[] = [keName, 'META', 'VALUES'];
     return this._sendCommand('ai.tensorget', args)
       .then((reply: any[]) => {
-        let dt = null;
-        let shape = null;
-        let values = null;
-        for (let i = 0; i < reply.length; i += 2) {
-          const key = reply[i];
-          const obj = reply[i + 1];
-          switch (key.toString()) {
-            case 'dtype':
-              // @ts-ignore
-              dt = DTypeMap[obj.toString()];
-              break;
-            case 'shape':
-              shape = obj;
-              break;
-            case 'values':
-              values = obj.map(Number);
-              break;
-          }
-        }
-        if (dt == null || shape == null || values == null) {
-          throw Error('tensorget reply did not had the full elements to build the tensor');
-        }
-        return new Tensor(dt, shape, values);
+        return Tensor.NewTensorFromTensorGetReply(reply);
       })
       .catch((error: any) => {
         throw error;
@@ -109,38 +85,7 @@ export class Client {
     const args: any[] = [modelName, 'META', 'BLOB'];
     return this._sendCommand('ai.modelget', args)
       .then((reply: any[]) => {
-        let backend = null;
-        let device = null;
-        let tag = null;
-        let blob = null;
-        for (let i = 0; i < reply.length; i += 2) {
-          const key = reply[i];
-          const obj = reply[i + 1];
-          switch (key.toString()) {
-            case 'backend':
-              backend = BackendMap[obj.toString()];
-              break;
-            case 'device':
-              // @ts-ignore
-              device = obj.toString();
-              break;
-            case 'tag':
-              tag = obj.toString();
-              break;
-            case 'blob':
-              // blob = obj;
-              blob = Buffer.from(obj);
-              break;
-          }
-        }
-        if (backend == null || device == null || blob == null) {
-          throw Error('modelget reply did not had the full elements to build the tensor');
-        }
-        const model = new Model(backend, device, [], [], blob);
-        if (tag !== null) {
-          model.tag = tag;
-        }
-        return model;
+        return Model.NewModelFromModelGetReply(reply);
       })
       .catch((error: any) => {
         throw error;
@@ -175,33 +120,7 @@ export class Client {
     const args: any[] = [scriptName, 'META', 'SOURCE'];
     return this._sendCommand('ai.scriptget', args)
       .then((reply: any[]) => {
-        let device = null;
-        let tag = null;
-        let source = null;
-        for (let i = 0; i < reply.length; i += 2) {
-          const key = reply[i];
-          const obj = reply[i + 1];
-          switch (key.toString()) {
-            case 'device':
-              // @ts-ignore
-              device = obj.toString();
-              break;
-            case 'tag':
-              tag = obj.toString();
-              break;
-            case 'source':
-              source = obj.toString();
-              break;
-          }
-        }
-        if (device == null || source == null) {
-          throw Error('scriptget reply did not had the full elements to build the tensor');
-        }
-        const script = new Script(device, source);
-        if (tag !== null) {
-          script.tag = tag;
-        }
-        return script;
+        return Script.NewScriptFromScriptGetReply(reply);
       })
       .catch((error: any) => {
         throw error;
@@ -225,70 +144,7 @@ export class Client {
     const args: any[] = [keyName];
     return this._sendCommand('ai.info', args)
       .then((reply: any[]) => {
-        let keystr: string | null = null;
-        let type: string | null = null;
-        let backend: Backend | null = null;
-        let device: string | null = null;
-        let tag: string | null = null;
-        let duration: number | null = null;
-        let samples: number | null = null;
-        let calls: number | null = null;
-        let errors: number | null = null;
-        for (let i = 0; i < reply.length; i += 2) {
-          const key = reply[i];
-          const obj = reply[i + 1];
-          switch (key.toString()) {
-            case 'key':
-              keystr = obj.toString();
-              break;
-            case 'type':
-              type = obj.toString();
-              break;
-            case 'backend':
-              // @ts-ignore
-              backend = BackendMap[obj.toString()];
-              break;
-            case 'device':
-              // @ts-ignore
-              device = obj.toString();
-              break;
-            case 'tag':
-              tag = obj.toString();
-              break;
-            case 'duration':
-              duration = obj;
-              break;
-            case 'samples':
-              samples = obj;
-              break;
-            case 'calls':
-              calls = obj;
-              break;
-            case 'errors':
-              errors = obj;
-              break;
-          }
-        }
-        if (keystr == null || type == null || backend == null || device == null) {
-          throw Error('ai.info reply did not had the full elements to build the tensor');
-        }
-        const stat = new Stats(keystr, type, backend, device);
-        if (tag !== null) {
-          stat.tag = tag;
-        }
-        if (duration !== null) {
-          stat.duration = duration;
-        }
-        if (samples !== null) {
-          stat.samples = samples;
-        }
-        if (calls !== null) {
-          stat.calls = calls;
-        }
-        if (errors !== null) {
-          stat.errors = errors;
-        }
-        return stat;
+        return Stats.NewStatsFromInfoReply(reply);
       })
       .catch((error: any) => {
         throw error;

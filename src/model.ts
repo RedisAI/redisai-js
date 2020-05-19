@@ -1,7 +1,7 @@
 /**
  * Direct mapping to RedisAI Model
  */
-import { Backend } from './backend';
+import { Backend, BackendMap } from './backend';
 
 export class Model {
   /**
@@ -84,5 +84,52 @@ export class Model {
 
   set blob(value: Buffer | undefined) {
     this._blob = value;
+  }
+
+  static NewModelFromModelGetReply(reply: any[]) {
+    let backend = null;
+    let device = null;
+    let tag = null;
+    let blob = null;
+    for (let i = 0; i < reply.length; i += 2) {
+      const key = reply[i];
+      const obj = reply[i + 1];
+      switch (key.toString()) {
+        case 'backend':
+          backend = BackendMap[obj.toString()];
+          break;
+        case 'device':
+          // @ts-ignore
+          device = obj.toString();
+          break;
+        case 'tag':
+          tag = obj.toString();
+          break;
+        case 'blob':
+          // blob = obj;
+          blob = Buffer.from(obj);
+          break;
+      }
+    }
+    if (backend == null || device == null || blob == null) {
+      const missingArr = [];
+      if (backend == null) {
+        missingArr.push('backend');
+      }
+      if (device == null) {
+        missingArr.push('device');
+      }
+      if (blob == null) {
+        missingArr.push('blob');
+      }
+      throw Error(
+        'AI.MODELGET reply did not had the full elements to build the Model. Missing ' + missingArr.join(',') + '.',
+      );
+    }
+    const model = new Model(backend, device, [], [], blob);
+    if (tag !== null) {
+      model.tag = tag;
+    }
+    return model;
   }
 }
