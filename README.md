@@ -2,6 +2,8 @@
 [![CircleCI](https://circleci.com/gh/RedisAI/redisai-js/tree/master.svg?style=svg)](https://circleci.com/gh/RedisAI/redisai-js/tree/master)
 [![npm version](https://badge.fury.io/js/redisai-js.svg)](https://badge.fury.io/js/redisai-js)
 [![codecov](https://codecov.io/gh/RedisAI/redisai-js/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisAI/redisai-js)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/RedisAI/redisai-js.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/RedisAI/redisai-js/context:javascript)
+[![Known Vulnerabilities](https://snyk.io/test/github/RedisAI/redisai-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/RedisAI/redisai-js?targetFile=package.json)
 
 ## A high performance node.js RedisAI client
 [![Forum](https://img.shields.io/badge/Forum-RedisAI-blue)](https://forum.redislabs.com/c/modules/redisai)
