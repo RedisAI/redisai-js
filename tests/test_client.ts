@@ -626,18 +626,24 @@ it(
 it(
     'ai.config positive and negative testing',
     mochaAsync(async () => {
-        const nativeClient = createClient();
+        const nativeClient = createClient({host:'192.168.50.10'});
         const aiclient = new Client(nativeClient);
         const result = await aiclient.configBackendsPath('/usr/lib/redis/modules/backends/');
         expect(result).to.equal('OK');
+        // negative test
         try {
             const loadReply = await aiclient.configLoadBackend(Backend.TF, 'notexist/redisai_tensorflow.so');
         } catch (e) {
             expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
         }
-        // will throw error if backend already loaded
-        const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
-        expect(loadResult).to.equal('OK');
+
+        try {
+            // may throw error if backend already loaded
+            const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
+            expect(loadResult).to.equal('OK');
+        } catch (e) {
+            expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
+        }
         aiclient.end(true);
     }),
 );
