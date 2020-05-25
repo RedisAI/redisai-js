@@ -626,7 +626,7 @@ it(
 it(
     'ai.config positive and negative testing',
     mochaAsync(async () => {
-        const nativeClient = createClient({host:'192.168.50.10'});
+        const nativeClient = createClient();
         const aiclient = new Client(nativeClient);
         const result = await aiclient.configBackendsPath('/usr/lib/redis/modules/backends/');
         expect(result).to.equal('OK');
