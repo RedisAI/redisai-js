@@ -635,6 +635,7 @@ it(
         } catch (e) {
             expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
         }
+        // will throw error if backend already loaded
         const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
         expect(loadResult).to.equal('OK');
         aiclient.end(true);
