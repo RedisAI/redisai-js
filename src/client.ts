@@ -150,4 +150,25 @@ export class Client {
         throw error;
       });
   }
+
+  /**
+   * Loads the DL/ML backend specified by the backend identifier from path.
+   *
+   * @param backend
+   * @param path
+   */
+  public configLoadBackend(backend: string, path: string): Promise<any> {
+    const args: any[] = ['LOADBACKEND', backend, path];
+    return this._sendCommand('ai.config', args);
+  }
+
+  /**
+   * Specifies the default base backends path to path.
+   *
+   * @param path
+   */
+  public configBackendsPath(path: string): Promise<any> {
+    const args: any[] = ['BACKENDSPATH', path];
+    return this._sendCommand('ai.config', args);
+  }
 }

@@ -622,3 +622,21 @@ it(
     aiclient.end(true);
   }),
 );
+
+it(
+    'ai.config positive and negative testing',
+    mochaAsync(async () => {
+        const nativeClient = createClient();
+        const aiclient = new Client(nativeClient);
+        const result = await aiclient.configBackendsPath('/usr/lib/redis/modules/backends/');
+        expect(result).to.equal('OK');
+        try {
+            const loadReply = await aiclient.configLoadBackend(Backend.TF, 'notexist/redisai_tensorflow.so');
+        } catch (e) {
+            expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
+        }
+        const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
+        expect(loadResult).to.equal('OK');
+        aiclient.end(true);
+    }),
+);
