@@ -662,6 +662,43 @@ it(
 );
 
 it(
+  'ai.dagrun chaining positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
+    model.tag = 'test_tag';
+    const resultModelSet = await aiclient.modelset('mymodel-dag', model);
+    expect(resultModelSet).to.equal('OK');
+
+    // DAG Building
+    const dag = new Dag();
+
+    const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
+    const tensorB = new Tensor(Dtype.float32, [1, 2], [3, 5]);
+
+    dag
+      .tensorset('tensorA', tensorA)
+      .tensorset('tensorB', tensorB)
+      .modelrun('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC'])
+      .tensorget('tensorC');
+
+    // DAG COMMAND
+    const resultDagRun = await aiclient.dagrun(null, null, dag);
+    expect(resultDagRun.length).to.equal(4);
+    expect(resultDagRun[0]).to.equal('OK');
+    expect(resultDagRun[1]).to.equal('OK');
+    expect(resultDagRun[2]).to.equal('OK');
+    const tensorC: Tensor = resultDagRun[3];
+    expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
+    aiclient.end(true);
+  }),
+);
+
+it(
   'ai.dagrun simple tensorset modelrun tensorget with persistency positive testing',
   mochaAsync(async () => {
     const nativeClient = createClient();

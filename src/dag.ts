@@ -3,15 +3,15 @@ import { Script } from './script';
 import { Tensor } from './tensor';
 
 export interface DagCommandInterface {
-  tensorset(keName: string, t: Tensor);
+  tensorset(keName: string, t: Tensor): DagCommandInterface;
 
-  tensorget(keyName: string);
+  tensorget(keyName: string): DagCommandInterface;
 
-  tensorget(keyName: string);
+  tensorget(keyName: string): DagCommandInterface;
 
-  modelrun(modelName: string, inputs: string[], outputs: string[]);
+  modelrun(modelName: string, inputs: string[], outputs: string[]): DagCommandInterface;
 
-  scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]);
+  scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): DagCommandInterface;
 }
 
 /**
@@ -26,32 +26,36 @@ export class Dag implements DagCommandInterface {
     this._tensorgetflag = [];
   }
 
-  public tensorset(keName: string, t: Tensor) {
+  public tensorset(keName: string, t: Tensor): Dag {
     const args: any[] = ['AI.TENSORSET'];
     t.tensorSetFlatArgs(keName).forEach((arg) => args.push(arg));
     this._commands.push(args);
     this._tensorgetflag.push(false);
+    return this;
   }
 
-  public tensorget(keyName: string) {
+  public tensorget(keyName: string): Dag {
     const args: any[] = ['AI.TENSORGET'];
     Tensor.tensorGetFlatArgs(keyName).forEach((arg) => args.push(arg));
     this._commands.push(args);
     this._tensorgetflag.push(true);
+    return this;
   }
 
-  public modelrun(modelName: string, inputs: string[], outputs: string[]) {
+  public modelrun(modelName: string, inputs: string[], outputs: string[]): Dag {
     const args: any[] = ['AI.MODELRUN'];
     Model.modelRunFlatArgs(modelName, inputs, outputs).forEach((arg) => args.push(arg));
     this._commands.push(args);
     this._tensorgetflag.push(false);
+    return this;
   }
 
-  public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]) {
+  public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Dag {
     const args: any[] = ['AI.SCRIPTRUN'];
     Script.scriptRunFlatArgs(scriptName, functionName, inputs, outputs).forEach((arg) => args.push(arg));
     this._commands.push(args);
     this._tensorgetflag.push(false);
+    return this;
   }
 
   public dagRunFlatArgs(loadKeys: string[] | null, persistKeys: string[] | null): any[] {
