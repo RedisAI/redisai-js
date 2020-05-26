@@ -214,10 +214,10 @@ AI.SCRIPTGET | scriptget
 AI.SCRIPTDEL | scriptdel
 AI.SCRIPTRUN | scriptrun
 AI._SCRIPTSCAN | N/A  
-AI.DAGRUN | N/A
-AI.DAGRUN_RO | N/A
+AI.DAGRUN | dagrun
+AI.DAGRUN_RO | dagrun_ro
 AI.INFO | info and infoResetStat (for resetting stats)
-AI.CONFIG * | N/A
+AI.CONFIG * | configLoadBackend and configBackendsPath
 
 
 ### Running tests
