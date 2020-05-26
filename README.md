@@ -125,6 +125,73 @@ Example of AI.SCRIPTSET and AI.SCRIPTRUN
 })();
 ```
 
+Example of AI.DAGRUN enqueuing multiple SCRIPTRUN and MODELRUN commands
+
+A common pattern is enqueuing multiple SCRIPTRUN and MODELRUN commands within a DAG. The following example uses ResNet-50,to classify images into 1000 object categories. 
+
+Given that our input tensor contains each color represented as a 8-bit integer and that neural networks usually work with floating-point tensors as their input we need to cast a tensor to floating-point and normalize the values of the pixels - for that we will use `pre_process_4ch` function. 
+
+To optimize the classification process we can use a post process script to return only the category position with the maximum classification - for that we will use `post_process` script. 
+
+Using the DAG capabilities we've removed the necessity of storing the intermediate tensors in the keyspace. You can even run the entire process without storing the output tensor, as follows:
+
+
+```javascript
+var redis = require('redis');
+var redisai = require('redisai-js');
+var fs = require("fs");
+
+(async () => {
+    const nativeClient = redis.createClient();
+    const aiclient = new redisai.Client(nativeClient);
+    const scriptFileStr = fs.readFileSync('./tests/test_data/imagenet/data_processing_script.txt').toString();
+    const jsonLabels = fs.readFileSync('./tests/test_data/imagenet/imagenet_class_index.json');
+    const labels = JSON.parse(jsonLabels);
+
+    const dataProcessingScript = new redisai.Script('CPU', scriptFileStr);
+    const resultScriptSet = await aiclient.scriptset('data_processing_script', dataProcessingScript);
+    // AI.SCRIPTSET result: OK
+    console.log(`AI.SCRIPTSET result: ${resultScriptSet}`)
+
+    const modelBlob = fs.readFileSync('./tests/test_data/imagenet/resnet50.pb');
+    const imagenetModel = new redisai.Model(Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
+    const resultModelSet = await aiclient.modelset('imagenet_model', imagenetModel);
+    
+    // AI.MODELSET result: OK
+    console.log(`AI.MODELSET result: ${resultModelSet}`)
+
+    const inputImage = await Jimp.read('./tests/test_data/imagenet/cat.jpg');
+    const imageWidth = 224;
+    const imageHeight = 224;
+    const image = inputImage.cover(imageWidth, imageHeight);
+    const tensor = new redisai.Tensor(Dtype.uint8, [imageWidth, imageHeight, 4], Buffer.from(image.bitmap.data));
+    
+    ///
+    // Prepare the DAG enqueuing multiple SCRIPTRUN and MODELRUN commands
+    const dag = new redisai.Dag();
+    
+    dag.tensorset('tensor-image', tensor);
+    dag.scriptrun('data_processing_script', 'pre_process_4ch', ['tensor-image'], ['temp_key1']);
+    dag.modelrun('imagenet_model', ['temp_key1'], ['temp_key2']);
+    dag.scriptrun('data_processing_script', 'post_process', ['temp_key2'], ['classification']);
+    dag.tensorget('classification');
+
+    // Send the AI.DAGRUN command to RedisAI server
+    const resultDagRun = await aiclient.dagrun_ro(null, dag);
+    
+    // The 5th element of the reply will be the `classification` tensor 
+    const classTensor = resultDagRun[4];
+    
+    // Print the category in the position with the max classification
+    const idx = classTensor.data[0];
+
+    // 281 [ 'n02123045', 'tabby' ]
+    console.log(idx, labels[idx.toString()]);
+
+    await aiclient.end();
+})();
+```
+
 ### Further examples
 
 The [RedisAI examples repo](https://github.com/RedisAI/redisai-examples) shows more advanced examples

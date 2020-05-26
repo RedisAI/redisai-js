@@ -117,6 +117,7 @@ export class Client {
   }
 
   /**
+   * specifies a direct acyclic graph of operations to run within RedisAI
    *
    * @param loadKeys
    * @param persistKeys
@@ -134,6 +135,7 @@ export class Client {
   }
 
   /**
+   * specifies a Read Only direct acyclic graph of operations to run within RedisAI
    *
    * @param loadKeys
    * @param dag
