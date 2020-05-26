@@ -87,4 +87,28 @@ export class Script {
     }
     return script;
   }
+
+  scriptSetFlatArgs(keyName: string) {
+    const args: any[] = [keyName, this.device];
+    if (this.tag !== undefined) {
+      args.push('TAG');
+      args.push(this.tag);
+    }
+    args.push('SOURCE');
+    args.push(this.script);
+    return args;
+  }
+
+  static scriptRunFlatArgs(scriptName: string, functionName: string, inputs: string[], outputs: string[]) {
+    const args: any[] = [scriptName, functionName, 'INPUTS'];
+    inputs.forEach((value) => args.push(value));
+    args.push('OUTPUTS');
+    outputs.forEach((value) => args.push(value));
+    return args;
+  }
+
+  static scriptGetFlatArgs(scriptName: string) {
+    const args: any[] = [scriptName, 'META', 'SOURCE'];
+    return args;
+  }
 }

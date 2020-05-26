@@ -24,22 +24,12 @@ export class Client {
   }
 
   public tensorset(keName: string, t: Tensor): Promise<any> {
-    const args: any[] = [keName, t.dtype];
-    t.shape.forEach((value) => args.push(value.toString()));
-    if (t.data != null) {
-      if (t.data instanceof Buffer) {
-        args.push('BLOB');
-        args.push(t.data);
-      } else {
-        args.push('VALUES');
-        t.data.forEach((value) => args.push(value.toString()));
-      }
-    }
+    const args: any[] = t.tensorSetFlatArgs(keName);
     return this._sendCommand('ai.tensorset', args);
   }
 
-  public tensorget(keName: string): Promise<any> {
-    const args: any[] = [keName, 'META', 'VALUES'];
+  public tensorget(keyName: string): Promise<any> {
+    const args: any[] = Tensor.tensorGetFlatArgs(keyName);
     return this._sendCommand('ai.tensorget', args)
       .then((reply: any[]) => {
         return Tensor.NewTensorFromTensorGetReply(reply);
@@ -49,30 +39,13 @@ export class Client {
       });
   }
 
-  public modelset(keName: string, m: Model): Promise<any> {
-    const args: any[] = [keName, m.backend.toString(), m.device];
-    if (m.tag !== undefined) {
-      args.push('TAG');
-      args.push(m.tag.toString());
-    }
-    if (m.inputs.length > 0) {
-      args.push('INPUTS');
-      m.inputs.forEach((value) => args.push(value));
-    }
-    if (m.outputs.length > 0) {
-      args.push('OUTPUTS');
-      m.outputs.forEach((value) => args.push(value));
-    }
-    args.push('BLOB');
-    args.push(m.blob);
+  public modelset(keyName: string, m: Model): Promise<any> {
+    const args: any[] = m.modelSetFlatArgs(keyName);
     return this._sendCommand('ai.modelset', args);
   }
 
   public modelrun(modelName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args: any[] = [modelName, 'INPUTS'];
-    inputs.forEach((value) => args.push(value));
-    args.push('OUTPUTS');
-    outputs.forEach((value) => args.push(value));
+    const args: any[] = Model.modelRunFlatArgs(modelName, inputs, outputs);
     return this._sendCommand('ai.modelrun', args);
   }
 
@@ -82,7 +55,7 @@ export class Client {
   }
 
   public modelget(modelName: string): Promise<any> {
-    const args: any[] = [modelName, 'META', 'BLOB'];
+    const args: any[] = Model.modelGetFlatArgs(modelName);
     return this._sendCommand('ai.modelget', args)
       .then((reply: any[]) => {
         return Model.NewModelFromModelGetReply(reply);
@@ -92,22 +65,13 @@ export class Client {
       });
   }
 
-  public scriptset(keName: string, s: Script): Promise<any> {
-    const args: any[] = [keName, s.device];
-    if (s.tag !== undefined) {
-      args.push('TAG');
-      args.push(s.tag);
-    }
-    args.push('SOURCE');
-    args.push(s.script);
+  public scriptset(keyName: string, s: Script): Promise<any> {
+    const args: any[] = s.scriptSetFlatArgs(keyName);
     return this._sendCommand('ai.scriptset', args);
   }
 
   public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args: any[] = [scriptName, functionName, 'INPUTS'];
-    inputs.forEach((value) => args.push(value));
-    args.push('OUTPUTS');
-    outputs.forEach((value) => args.push(value));
+    const args: any[] = Script.scriptRunFlatArgs(scriptName, functionName, inputs, outputs);
     return this._sendCommand('ai.scriptrun', args);
   }
 
@@ -117,7 +81,7 @@ export class Client {
   }
 
   public scriptget(scriptName: string): Promise<any> {
-    const args: any[] = [scriptName, 'META', 'SOURCE'];
+    const args: any[] = Script.scriptGetFlatArgs(scriptName);
     return this._sendCommand('ai.scriptget', args)
       .then((reply: any[]) => {
         return Script.NewScriptFromScriptGetReply(reply);

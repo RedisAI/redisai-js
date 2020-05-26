@@ -132,4 +132,36 @@ export class Model {
     }
     return model;
   }
+
+  static modelGetFlatArgs(keyName: string): any[] {
+    const args: any[] = [keyName, 'META', 'BLOB'];
+    return args;
+  }
+
+  static modelRunFlatArgs(modelName: string, inputs: string[], outputs: string[]): any[] {
+    const args: any[] = [modelName, 'INPUTS'];
+    inputs.forEach((value) => args.push(value));
+    args.push('OUTPUTS');
+    outputs.forEach((value) => args.push(value));
+    return args;
+  }
+
+  modelSetFlatArgs(keyName: string) {
+    const args: any[] = [keyName, this.backend.toString(), this.device];
+    if (this.tag !== undefined) {
+      args.push('TAG');
+      args.push(this.tag.toString());
+    }
+    if (this.inputs.length > 0) {
+      args.push('INPUTS');
+      this.inputs.forEach((value) => args.push(value));
+    }
+    if (this.outputs.length > 0) {
+      args.push('OUTPUTS');
+      this.outputs.forEach((value) => args.push(value));
+    }
+    args.push('BLOB');
+    args.push(this.blob);
+    return args;
+  }
 }
