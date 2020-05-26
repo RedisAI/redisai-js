@@ -4,6 +4,7 @@ import { Model } from './model';
 import * as util from 'util';
 import { Script } from './script';
 import { Stats } from './stats';
+import { Dag, DagCommandInterface } from './dag';
 
 export class Client {
   private _sendCommand: any;
@@ -109,6 +110,28 @@ export class Client {
     return this._sendCommand('ai.info', args)
       .then((reply: any[]) => {
         return Stats.NewStatsFromInfoReply(reply);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
+  }
+
+  public dagrun(loadKeys: string[] | null, persistKeys: string[] | null, dag: Dag): Promise<any> {
+    const args: any[] = dag.dagRunFlatArgs(loadKeys, persistKeys);
+    return this._sendCommand('ai.dagrun', args)
+      .then((reply: any[]) => {
+        return dag.ProcessDagReply(reply);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
+  }
+
+  public dagrun_ro(loadKeys: string[] | null, dag: Dag): Promise<any> {
+    const args: any[] = dag.dagRunFlatArgs(loadKeys, null);
+    return this._sendCommand('ai.dagrun_ro', args)
+      .then((reply: any[]) => {
+        return dag.ProcessDagReply(reply);
       })
       .catch((error: any) => {
         throw error;

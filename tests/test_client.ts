@@ -8,7 +8,7 @@ import { Model } from '../src/model';
 import * as fs from 'fs';
 import { Backend } from '../src/backend';
 import { Script } from '../src/script';
-import { Helpers, Stats } from '../src';
+import { Dag, Helpers, Stats } from '../src';
 import util from 'util';
 // tslint:disable-next-line:no-var-requires
 const Jimp = require('jimp');
@@ -621,4 +621,261 @@ it(
     }
     aiclient.end(true);
   }),
+);
+
+it(
+  'ai.dagrun simple tensorset modelrun tensorget positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
+    model.tag = 'test_tag';
+    const resultModelSet = await aiclient.modelset('mymodel-dag', model);
+    expect(resultModelSet).to.equal('OK');
+
+    // DAG Building
+    const dag = new Dag();
+
+    const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
+    dag.tensorset('tensorA', tensorA);
+
+    const tensorB = new Tensor(Dtype.float32, [1, 2], [3, 5]);
+    dag.tensorset('tensorB', tensorB);
+
+    dag.modelrun('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC']);
+
+    dag.tensorget('tensorC');
+
+    // DAG COMMAND
+    const resultDagRun = await aiclient.dagrun(null, null, dag);
+    expect(resultDagRun.length).to.equal(4);
+    expect(resultDagRun[0]).to.equal('OK');
+    expect(resultDagRun[1]).to.equal('OK');
+    expect(resultDagRun[2]).to.equal('OK');
+    const tensorC: Tensor = resultDagRun[3];
+    expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.dagrun simple tensorset modelrun tensorget with persistency positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
+    model.tag = 'test_tag';
+    const resultModelSet = await aiclient.modelset('mymodel-dag', model);
+    expect(resultModelSet).to.equal('OK');
+
+    // DAG Building
+    const dag = new Dag();
+
+    const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
+    dag.tensorset('tensorA', tensorA);
+
+    const tensorB = new Tensor(Dtype.float32, [1, 2], [3, 5]);
+    dag.tensorset('tensorB', tensorB);
+
+    dag.modelrun('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC']);
+
+    // DAG COMMAND
+    const resultDagRun = await aiclient.dagrun(null, ['tensorC'], dag);
+    expect(resultDagRun.length).to.equal(3);
+    expect(resultDagRun[0]).to.equal('OK');
+    expect(resultDagRun[1]).to.equal('OK');
+    expect(resultDagRun[2]).to.equal('OK');
+
+    // Get result from the keyspace
+    const tensorC = await aiclient.tensorget('tensorC');
+    expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
+
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.dagrun simple tensorset modelrun tensorget with loading and persistency positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
+    model.tag = 'test_tag';
+    const resultModelSet = await aiclient.modelset('mymodel-dag', model);
+    expect(resultModelSet).to.equal('OK');
+
+    const tensorA = new Tensor(Dtype.float32, [1, 2], [2, 3]);
+    const resultA = await aiclient.tensorset('tensorA', tensorA);
+    expect(resultA).to.equal('OK');
+
+    const tensorB = new Tensor(Dtype.float32, [1, 2], [3, 5]);
+    const resultB = await aiclient.tensorset('tensorB', tensorB);
+    expect(resultB).to.equal('OK');
+
+    // DAG Building
+    const dag = new Dag();
+
+    dag.modelrun('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC']);
+
+    // DAG COMMAND
+    const resultDagRun = await aiclient.dagrun(['tensorA', 'tensorB'], ['tensorC'], dag);
+    expect(resultDagRun.length).to.equal(1);
+    expect(resultDagRun[0]).to.equal('OK');
+
+    // Get result from the keyspace
+    const tensorC = await aiclient.tensorget('tensorC');
+    expect(tensorC.data[0]).to.closeTo(6.0, 0.1);
+    expect(tensorC.data[1]).to.closeTo(15.0, 0.1);
+
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.dagrun negative testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    try {
+      // DAG Building
+      const dag = new Dag();
+
+      dag.modelrun('dont-exist', ['tensorA'], ['tensorC']);
+
+      const result = await aiclient.dagrun(null, null, dag);
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
+    }
+    aiclient.end(true);
+  }),
+);
+
+
+it(
+    'ai.dagrun_ro negative testing',
+    mochaAsync(async () => {
+        const nativeClient = createClient();
+        const aiclient = new Client(nativeClient);
+        try {
+            // DAG Building
+            const dag = new Dag();
+
+            dag.modelrun('dont-exist', ['tensorA'], ['tensorC']);
+
+            const result = await aiclient.dagrun_ro(null,  dag);
+        } catch (e) {
+            expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
+        }
+        aiclient.end(true);
+    }),
+);
+
+it(
+  'ai.dagrun Resnet-50 modelrun scriptrun positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const scriptFileStr: string = fs.readFileSync('./tests/test_data/imagenet/data_processing_script.txt').toString();
+    const jsonLabels = fs.readFileSync('./tests/test_data/imagenet/imagenet_class_index.json');
+    // @ts-ignore
+    const labels = JSON.parse(jsonLabels);
+
+    const dataProcessingScript = new Script('CPU', scriptFileStr);
+    const resultScriptSet = await aiclient.scriptset('data_processing_script', dataProcessingScript);
+    expect(resultScriptSet).to.equal('OK');
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/imagenet/resnet50.pb');
+    const imagenetModel = new Model(Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
+    const resultModelSet = await aiclient.modelset('imagenet_model', imagenetModel);
+    expect(resultModelSet).to.equal('OK');
+
+    const inputImage = await Jimp.read('./tests/test_data/imagenet/cat.jpg');
+    const imageWidth = 224;
+    const imageHeight = 224;
+    const image = inputImage.cover(imageWidth, imageHeight);
+    const buffer = Buffer.from(image.bitmap.data);
+
+    const tensor = new Tensor(Dtype.uint8, [imageWidth, imageHeight, 4], buffer);
+    const dag = new Dag();
+
+    dag.tensorset('tensor-image', tensor);
+    dag.scriptrun('data_processing_script', 'pre_process_4ch', ['tensor-image'], ['temp_key1']);
+    dag.modelrun('imagenet_model', ['temp_key1'], ['temp_key2']);
+    dag.scriptrun('data_processing_script', 'post_process', ['temp_key2'], ['classification']);
+    dag.tensorget('classification');
+
+    // DAG COMMAND
+    const resultDagRun = await aiclient.dagrun(null, null, dag);
+    expect(resultDagRun.length).to.equal(5);
+    expect(resultDagRun[0]).to.equal('OK');
+    expect(resultDagRun[1]).to.equal('OK');
+    expect(resultDagRun[2]).to.equal('OK');
+    expect(resultDagRun[3]).to.equal('OK');
+    const classTensor: Tensor = resultDagRun[4];
+    expect(classTensor.data.length).to.equal(1);
+    // # tf model has 100 classes [0,999]
+    const idx = classTensor.data[0];
+    expect(idx).to.greaterThan(-1);
+    expect(idx).to.lessThan(1000);
+    console.log(idx, labels[idx.toString()]);
+    aiclient.end(true);
+  }),
+);
+
+it(
+    'ai.dagrun_ro Resnet-50 modelrun scriptrun positive testing',
+    mochaAsync(async () => {
+        const nativeClient = createClient();
+        const aiclient = new Client(nativeClient);
+        const scriptFileStr: string = fs.readFileSync('./tests/test_data/imagenet/data_processing_script.txt').toString();
+        const jsonLabels = fs.readFileSync('./tests/test_data/imagenet/imagenet_class_index.json');
+        // @ts-ignore
+        const labels = JSON.parse(jsonLabels);
+
+        const dataProcessingScript = new Script('CPU', scriptFileStr);
+        const resultScriptSet = await aiclient.scriptset('data_processing_script', dataProcessingScript);
+        expect(resultScriptSet).to.equal('OK');
+
+        const modelBlob: Buffer = fs.readFileSync('./tests/test_data/imagenet/resnet50.pb');
+        const imagenetModel = new Model(Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
+        const resultModelSet = await aiclient.modelset('imagenet_model', imagenetModel);
+        expect(resultModelSet).to.equal('OK');
+
+        const inputImage = await Jimp.read('./tests/test_data/imagenet/cat.jpg');
+        const imageWidth = 224;
+        const imageHeight = 224;
+        const image = inputImage.cover(imageWidth, imageHeight);
+        const tensor = new Tensor(Dtype.uint8, [imageWidth, imageHeight, 4], Buffer.from(image.bitmap.data));
+        const dag = new Dag();
+
+        dag.tensorset('tensor-image', tensor);
+        dag.scriptrun('data_processing_script', 'pre_process_4ch', ['tensor-image'], ['temp_key1']);
+        dag.modelrun('imagenet_model', ['temp_key1'], ['temp_key2']);
+        dag.scriptrun('data_processing_script', 'post_process', ['temp_key2'], ['classification']);
+        dag.tensorget('classification');
+
+        // DAG COMMAND
+        const resultDagRun = await aiclient.dagrun_ro(null,  dag);
+        expect(resultDagRun.length).to.equal(5);
+        expect(resultDagRun[0]).to.equal('OK');
+        expect(resultDagRun[1]).to.equal('OK');
+        expect(resultDagRun[2]).to.equal('OK');
+        expect(resultDagRun[3]).to.equal('OK');
+        const classTensor: Tensor = resultDagRun[4];
+        expect(classTensor.data.length).to.equal(1);
+        // # tf model has 100 classes [0,999]
+        const idx = classTensor.data[0];
+        expect(idx).to.greaterThan(-1);
+        expect(idx).to.lessThan(1000);
+        console.log(idx, labels[idx.toString()]);
+        aiclient.end(true);
+    }),
 );

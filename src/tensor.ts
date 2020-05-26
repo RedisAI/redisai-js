@@ -48,7 +48,7 @@ export class Tensor {
     this._data = value;
   }
   //
-  public tensorSetFlatArgs(keName: string): any[] {
+  tensorSetFlatArgs(keName: string): any[] {
     const args: any[] = [keName, this.dtype];
     this.shape.forEach((value) => args.push(value.toString()));
     if (this.data != null) {
