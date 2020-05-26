@@ -331,13 +331,50 @@ it(
     const aiclient = new Client(nativeClient);
 
     const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
-    const model = new Model(Backend.TF, 'CPU', ['a', 'b'], ['c'], modelBlob);
+    const inputs: string[] = ['a', 'b'];
+    const outputs: string[] = ['c'];
+    const model = new Model(Backend.TF, 'CPU', inputs, outputs, modelBlob);
     model.tag = 'test_tag';
     const resultModelSet = await aiclient.modelset('mymodel', model);
     expect(resultModelSet).to.equal('OK');
 
-    const modelOut = await aiclient.modelget('mymodel');
+    const modelOut: Model = await aiclient.modelget('mymodel');
     expect(modelOut.blob.toString()).to.equal(modelBlob.toString());
+    for (let index = 0; index < modelOut.outputs.length; index++) {
+      expect(modelOut.outputs[index]).to.equal(outputs[index]);
+      expect(modelOut.outputs[index]).to.equal(model.outputs[index]);
+    }
+    for (let index = 0; index < modelOut.inputs.length; index++) {
+      expect(modelOut.inputs[index]).to.equal(inputs[index]);
+      expect(modelOut.inputs[index]).to.equal(model.inputs[index]);
+    }
+    expect(modelOut.batchsize).to.equal(model.batchsize);
+    expect(modelOut.minbatchsize).to.equal(model.minbatchsize);
+    aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.modelget batching positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const inputs: string[] = ['a', 'b'];
+    const outputs: string[] = ['c'];
+    const model = new Model(Backend.TF, 'CPU', inputs, outputs, modelBlob);
+    model.tag = 'test_tag';
+    model.batchsize = 100;
+    model.minbatchsize = 5;
+    const resultModelSet = await aiclient.modelset('mymodel-batching', model);
+    expect(resultModelSet).to.equal('OK');
+    const modelOut: Model = await aiclient.modelget('mymodel-batching');
+    const resultModelSet2 = await aiclient.modelset('mymodel-batching-loop', modelOut);
+    expect(resultModelSet2).to.equal('OK');
+    const modelOut2: Model = await aiclient.modelget('mymodel-batching-loop');
+    expect(modelOut.batchsize).to.equal(model.batchsize);
+    expect(modelOut.minbatchsize).to.equal(model.minbatchsize);
     aiclient.end(true);
   }),
 );
@@ -624,26 +661,26 @@ it(
 );
 
 it(
-    'ai.config positive and negative testing',
-    mochaAsync(async () => {
-        const nativeClient = createClient();
-        const aiclient = new Client(nativeClient);
-        const result = await aiclient.configBackendsPath('/usr/lib/redis/modules/backends/');
-        expect(result).to.equal('OK');
-        // negative test
-        try {
-            const loadReply = await aiclient.configLoadBackend(Backend.TF, 'notexist/redisai_tensorflow.so');
-        } catch (e) {
-            expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
-        }
+  'ai.config positive and negative testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+    const result = await aiclient.configBackendsPath('/usr/lib/redis/modules/backends/');
+    expect(result).to.equal('OK');
+    // negative test
+    try {
+      const loadReply = await aiclient.configLoadBackend(Backend.TF, 'notexist/redisai_tensorflow.so');
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
+    }
 
-        try {
-            // may throw error if backend already loaded
-            const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
-            expect(loadResult).to.equal('OK');
-        } catch (e) {
-            expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
-        }
-        aiclient.end(true);
-    }),
+    try {
+      // may throw error if backend already loaded
+      const loadResult = await aiclient.configLoadBackend(Backend.TF, 'redisai_tensorflow/redisai_tensorflow.so');
+      expect(loadResult).to.equal('OK');
+    } catch (e) {
+      expect(e.toString()).to.equal('ReplyError: ERR error loading backend');
+    }
+    aiclient.end(true);
+  }),
 );

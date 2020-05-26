@@ -49,22 +49,8 @@ export class Client {
       });
   }
 
-  public modelset(keName: string, m: Model): Promise<any> {
-    const args: any[] = [keName, m.backend.toString(), m.device];
-    if (m.tag !== undefined) {
-      args.push('TAG');
-      args.push(m.tag.toString());
-    }
-    if (m.inputs.length > 0) {
-      args.push('INPUTS');
-      m.inputs.forEach((value) => args.push(value));
-    }
-    if (m.outputs.length > 0) {
-      args.push('OUTPUTS');
-      m.outputs.forEach((value) => args.push(value));
-    }
-    args.push('BLOB');
-    args.push(m.blob);
+  public modelset(keyName: string, m: Model): Promise<any> {
+    const args: any[] = m.modelSetFlatArgs(keyName);
     return this._sendCommand('ai.modelset', args);
   }
 

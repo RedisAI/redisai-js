@@ -19,6 +19,8 @@ export class Model {
     this._outputs = outputs;
     this._blob = blob;
     this._tag = undefined;
+    this._batchsize = 0;
+    this._minbatchsize = 0;
   }
 
   // tag is an optional string for tagging the model such as a version number or any arbitrary identifier
@@ -86,14 +88,36 @@ export class Model {
     this._blob = value;
   }
 
+  get minbatchsize(): number {
+    return this._minbatchsize;
+  }
+
+  set minbatchsize(value: number) {
+    this._minbatchsize = value;
+  }
+  get batchsize(): number {
+    return this._batchsize;
+  }
+
+  set batchsize(value: number) {
+    this._batchsize = value;
+  }
+  private _batchsize: number;
+  private _minbatchsize: number;
+
   static NewModelFromModelGetReply(reply: any[]) {
     let backend = null;
     let device = null;
     let tag = null;
     let blob = null;
+    let batchsize: null | number = null;
+    let minbatchsize: null | number = null;
+    const inputs: string[] = [];
+    const outputs: string[] = [];
     for (let i = 0; i < reply.length; i += 2) {
       const key = reply[i];
       const obj = reply[i + 1];
+
       switch (key.toString()) {
         case 'backend':
           backend = BackendMap[obj.toString()];
@@ -106,8 +130,25 @@ export class Model {
           tag = obj.toString();
           break;
         case 'blob':
-          // blob = obj;
           blob = Buffer.from(obj);
+          break;
+        case 'batchsize':
+          batchsize = parseInt(obj.toString(), 10);
+          break;
+        case 'minbatchsize':
+          minbatchsize = parseInt(obj.toString(), 10);
+          break;
+        case 'inputs':
+          // tslint:disable-next-line:prefer-for-of
+          for (let j = 0; j < obj.length; j++) {
+            inputs.push(obj[j].toString());
+          }
+          break;
+        case 'outputs':
+          // tslint:disable-next-line:prefer-for-of
+          for (let j = 0; j < obj.length; j++) {
+            outputs.push(obj[j].toString());
+          }
           break;
       }
     }
@@ -126,10 +167,43 @@ export class Model {
         'AI.MODELGET reply did not had the full elements to build the Model. Missing ' + missingArr.join(',') + '.',
       );
     }
-    const model = new Model(backend, device, [], [], blob);
+    const model = new Model(backend, device, inputs, outputs, blob);
     if (tag !== null) {
       model.tag = tag;
     }
+    if (batchsize !== null) {
+      model.batchsize = batchsize;
+    }
+    if (minbatchsize !== null) {
+      model.minbatchsize = minbatchsize;
+    }
     return model;
+  }
+
+  modelSetFlatArgs(keyName: string) {
+    const args: any[] = [keyName, this.backend.toString(), this.device];
+    if (this.tag !== undefined) {
+      args.push('TAG');
+      args.push(this.tag.toString());
+    }
+    if (this.batchsize > 0) {
+      args.push('BATCHSIZE');
+      args.push(this.batchsize);
+      if (this.minbatchsize > 0) {
+        args.push('MINBATCHSIZE');
+        args.push(this.minbatchsize);
+      }
+    }
+    if (this.inputs.length > 0) {
+      args.push('INPUTS');
+      this.inputs.forEach((value) => args.push(value));
+    }
+    if (this.outputs.length > 0) {
+      args.push('OUTPUTS');
+      this.outputs.forEach((value) => args.push(value));
+    }
+    args.push('BLOB');
+    args.push(this.blob);
+    return args;
   }
 }
