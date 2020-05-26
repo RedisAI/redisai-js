@@ -101,7 +101,6 @@ export class Tensor {
   }
 
   static tensorGetFlatArgs(keyName: string): any[] {
-    const args: any[] = [keyName, 'META', 'VALUES'];
-    return args;
+    return [keyName, 'META', 'VALUES'];
   }
 }

@@ -4,17 +4,17 @@ import { Model } from './model';
 import * as util from 'util';
 import { Script } from './script';
 import { Stats } from './stats';
-import { Dag, DagCommandInterface } from './dag';
+import { Dag } from './dag';
 
 export class Client {
-  private _sendCommand: any;
+  private readonly _sendCommand: any;
 
   constructor(client: RedisClient) {
     this._client = client;
     this._sendCommand = util.promisify(this._client.send_command).bind(this._client);
   }
 
-  private _client: RedisClient;
+  private readonly _client: RedisClient;
 
   get client(): RedisClient {
     return this._client;

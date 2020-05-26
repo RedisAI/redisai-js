@@ -134,8 +134,7 @@ export class Model {
   }
 
   static modelGetFlatArgs(keyName: string): any[] {
-    const args: any[] = [keyName, 'META', 'BLOB'];
-    return args;
+    return [keyName, 'META', 'BLOB'];
   }
 
   static modelRunFlatArgs(modelName: string, inputs: string[], outputs: string[]): any[] {

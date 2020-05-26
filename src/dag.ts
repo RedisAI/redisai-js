@@ -1,7 +1,6 @@
 import { Model } from './model';
 import { Script } from './script';
 import { Tensor } from './tensor';
-import { Dtype, DTypeMap } from './dtype';
 
 export interface DagCommandInterface {
   tensorset(keName: string, t: Tensor);
@@ -20,7 +19,7 @@ export interface DagCommandInterface {
  */
 export class Dag implements DagCommandInterface {
   private _commands: any[][];
-  private _tensorgetflag: boolean[];
+  private readonly _tensorgetflag: boolean[];
 
   constructor() {
     this._commands = [];
