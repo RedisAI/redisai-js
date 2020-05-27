@@ -11,16 +11,26 @@ export class Model {
    * @param inputs - one or more names of the model's input nodes (applicable only for TensorFlow models)
    * @param outputs - one or more names of the model's output nodes (applicable only for TensorFlow models)
    * @param blob - the Protobuf-serialized model
+   * @param batchsize - when provided with an batchsize that is greater than 0, the engine will batch incoming requests from multiple clients that use the model with input tensors of the same shape.
+   * @param minbatchsize -  when provided with an minbatchsize that is greater than 0, the engine will postpone calls to AI.MODELRUN until the batch's size had reached minbatchsize
    */
-  constructor(backend: Backend, device: string, inputs: string[], outputs: string[], blob: Buffer | undefined) {
+  constructor(
+    backend: Backend,
+    device: string,
+    inputs: string[],
+    outputs: string[],
+    blob: Buffer | undefined,
+    batchsize?: number,
+    minbatchsize?: number,
+  ) {
     this._backend = backend;
     this._device = device;
     this._inputs = inputs;
     this._outputs = outputs;
     this._blob = blob;
     this._tag = undefined;
-    this._batchsize = 0;
-    this._minbatchsize = 0;
+    this._batchsize = batchsize || 0;
+    this._minbatchsize = minbatchsize || 0;
   }
 
   // tag is an optional string for tagging the model such as a version number or any arbitrary identifier
@@ -110,8 +120,8 @@ export class Model {
     let device = null;
     let tag = null;
     let blob = null;
-    let batchsize: null | number = null;
-    let minbatchsize: null | number = null;
+    let batchsize: number = 0;
+    let minbatchsize: number = 0;
     const inputs: string[] = [];
     const outputs: string[] = [];
     for (let i = 0; i < reply.length; i += 2) {
@@ -167,15 +177,9 @@ export class Model {
         'AI.MODELGET reply did not had the full elements to build the Model. Missing ' + missingArr.join(',') + '.',
       );
     }
-    const model = new Model(backend, device, inputs, outputs, blob);
+    const model = new Model(backend, device, inputs, outputs, blob, batchsize, minbatchsize);
     if (tag !== null) {
       model.tag = tag;
-    }
-    if (batchsize !== null) {
-      model.batchsize = batchsize;
-    }
-    if (minbatchsize !== null) {
-      model.minbatchsize = minbatchsize;
     }
     return model;
   }

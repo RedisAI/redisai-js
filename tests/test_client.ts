@@ -380,6 +380,33 @@ it(
 );
 
 it(
+  'ai.modelget batching via constructor positive testing',
+  mochaAsync(async () => {
+    const nativeClient = createClient();
+    const aiclient = new Client(nativeClient);
+
+    const modelBlob: Buffer = fs.readFileSync('./tests/test_data/graph.pb');
+    const inputs: string[] = ['a', 'b'];
+    const outputs: string[] = ['c'];
+    const model = new Model(Backend.TF, 'CPU', inputs, outputs, modelBlob, 100, 5);
+    model.tag = 'test_tag';
+    const resultModelSet = await aiclient.modelset('mymodel-batching-t2', model);
+    expect(resultModelSet).to.equal('OK');
+    const modelOut: Model = await aiclient.modelget('mymodel-batching-t2');
+    const resultModelSet2 = await aiclient.modelset('mymodel-batching-loop-t2', modelOut);
+    expect(resultModelSet2).to.equal('OK');
+    const modelOut2: Model = await aiclient.modelget('mymodel-batching-loop');
+    expect(modelOut.batchsize).to.equal(model.batchsize);
+    expect(modelOut.minbatchsize).to.equal(model.minbatchsize);
+
+    const model2 = new Model(Backend.TF, 'CPU', inputs, outputs, modelBlob, 1000);
+    expect(model2.batchsize).to.equal(1000);
+    expect(model2.minbatchsize).to.equal(0);
+    aiclient.end(true);
+  }),
+);
+
+it(
   'ai.modelget negative testing on response parsing',
   mochaAsync(async () => {
     // empty array reply
