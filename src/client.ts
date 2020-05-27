@@ -24,8 +24,8 @@ export class Client {
     this._client.end(flush);
   }
 
-  public tensorset(keName: string, t: Tensor): Promise<any> {
-    const args: any[] = t.tensorSetFlatArgs(keName);
+  public tensorset(keyName: string, t: Tensor): Promise<any> {
+    const args: any[] = t.tensorSetFlatArgs(keyName);
     return this._sendCommand('ai.tensorset', args);
   }
 

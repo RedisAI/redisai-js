@@ -3,7 +3,7 @@ import { Script } from './script';
 import { Tensor } from './tensor';
 
 export interface DagCommandInterface {
-  tensorset(keName: string, t: Tensor): DagCommandInterface;
+  tensorset(keyName: string, t: Tensor): DagCommandInterface;
 
   tensorget(keyName: string): DagCommandInterface;
 
@@ -26,9 +26,9 @@ export class Dag implements DagCommandInterface {
     this._tensorgetflag = [];
   }
 
-  public tensorset(keName: string, t: Tensor): Dag {
+  public tensorset(keyName: string, t: Tensor): Dag {
     const args: any[] = ['AI.TENSORSET'];
-    t.tensorSetFlatArgs(keName).forEach((arg) => args.push(arg));
+    t.tensorSetFlatArgs(keyName).forEach((arg) => args.push(arg));
     this._commands.push(args);
     this._tensorgetflag.push(false);
     return this;
