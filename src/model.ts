@@ -98,13 +98,8 @@ export class Model {
     this._blob = value;
   }
 
-  get minbatchsize(): number {
-    return this._minbatchsize;
-  }
+  private _batchsize: number;
 
-  set minbatchsize(value: number) {
-    this._minbatchsize = value;
-  }
   get batchsize(): number {
     return this._batchsize;
   }
@@ -112,8 +107,16 @@ export class Model {
   set batchsize(value: number) {
     this._batchsize = value;
   }
-  private _batchsize: number;
+
   private _minbatchsize: number;
+
+  get minbatchsize(): number {
+    return this._minbatchsize;
+  }
+
+  set minbatchsize(value: number) {
+    this._minbatchsize = value;
+  }
 
   static NewModelFromModelGetReply(reply: any[]) {
     let backend = null;
@@ -149,16 +152,10 @@ export class Model {
           minbatchsize = parseInt(obj.toString(), 10);
           break;
         case 'inputs':
-          // tslint:disable-next-line:prefer-for-of
-          for (let j = 0; j < obj.length; j++) {
-            inputs.push(obj[j].toString());
-          }
+          obj.forEach((input) => inputs.push(input));
           break;
         case 'outputs':
-          // tslint:disable-next-line:prefer-for-of
-          for (let j = 0; j < obj.length; j++) {
-            outputs.push(obj[j].toString());
-          }
+          obj.forEach((output) => outputs.push(output));
           break;
       }
     }
