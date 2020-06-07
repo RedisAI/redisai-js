@@ -100,7 +100,7 @@ export class Tensor {
     return new Tensor(dt, shape, values);
   }
 
-  static tensorGetFlatArgs(keyName: string): any[] {
+  static tensorGetFlatArgs(keyName: string): string[] {
     return [keyName, 'META', 'VALUES'];
   }
 }

@@ -99,16 +99,16 @@ export class Script {
     return args;
   }
 
-  static scriptRunFlatArgs(scriptName: string, functionName: string, inputs: string[], outputs: string[]) {
-    const args: any[] = [scriptName, functionName, 'INPUTS'];
+  static scriptRunFlatArgs(scriptName: string, functionName: string, inputs: string[], outputs: string[]): string[] {
+    const args: string[] = [scriptName, functionName, 'INPUTS'];
     inputs.forEach((value) => args.push(value));
     args.push('OUTPUTS');
     outputs.forEach((value) => args.push(value));
     return args;
   }
 
-  static scriptGetFlatArgs(scriptName: string) {
-    const args: any[] = [scriptName, 'META', 'SOURCE'];
+  static scriptGetFlatArgs(scriptName: string): string[] {
+    const args: string[] = [scriptName, 'META', 'SOURCE'];
     return args;
   }
 }
