@@ -88,8 +88,8 @@ export class Script {
     return script;
   }
 
-  scriptSetFlatArgs(keyName: string) {
-    const args: any[] = [keyName, this.device];
+  scriptSetFlatArgs(keyName: string): string[] {
+    const args: string[] = [keyName, this.device];
     if (this.tag !== undefined) {
       args.push('TAG');
       args.push(this.tag);

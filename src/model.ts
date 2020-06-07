@@ -133,7 +133,7 @@ export class Model {
     return model;
   }
 
-  static modelGetFlatArgs(keyName: string): any[] {
+  static modelGetFlatArgs(keyName: string): string[] {
     return [keyName, 'META', 'BLOB'];
   }
 

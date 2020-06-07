@@ -58,7 +58,7 @@ export class Dag implements DagCommandInterface {
     return this;
   }
 
-  public dagRunFlatArgs(loadKeys: string[] | null, persistKeys: string[] | null): any[] {
+  public dagRunFlatArgs(loadKeys: string[] | null, persistKeys: string[] | null): string[] {
     const args: any[] = [];
     if (loadKeys != null && loadKeys.length > 0) {
       args.push('LOAD');
