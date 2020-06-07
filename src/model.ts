@@ -30,7 +30,13 @@ export class Model {
     this._blob = blob;
     this._tag = undefined;
     this._batchsize = batchsize || 0;
+    if (this._batchsize < 0) {
+      this._batchsize = 0;
+    }
     this._minbatchsize = minbatchsize || 0;
+    if (this._minbatchsize < 0) {
+      this._minbatchsize = 0;
+    }
   }
 
   // tag is an optional string for tagging the model such as a version number or any arbitrary identifier
