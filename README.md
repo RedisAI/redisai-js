@@ -150,7 +150,7 @@ AI._SCRIPTSCAN | N/A
 AI.DAGRUN | N/A
 AI.DAGRUN_RO | N/A
 AI.INFO | info and infoResetStat (for resetting stats)
-AI.CONFIG * | N/A
+AI.CONFIG * | configLoadBackend and configBackendsPath
 
 
 ### Running tests
