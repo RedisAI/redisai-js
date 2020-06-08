@@ -140,6 +140,7 @@ Using the DAG capabilities we've removed the necessity of storing the intermedia
 var redis = require('redis');
 var redisai = require('redisai-js');
 var fs = require("fs");
+var Jimp = require('jimp');
 
 (async () => {
     const nativeClient = redis.createClient();
@@ -154,7 +155,7 @@ var fs = require("fs");
     console.log(`AI.SCRIPTSET result: ${resultScriptSet}`)
 
     const modelBlob = fs.readFileSync('./tests/test_data/imagenet/resnet50.pb');
-    const imagenetModel = new redisai.Model(Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
+    const imagenetModel = new redisai.Model(redisai.Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
     const resultModelSet = await aiclient.modelset('imagenet_model', imagenetModel);
     
     // AI.MODELSET result: OK
@@ -164,7 +165,7 @@ var fs = require("fs");
     const imageWidth = 224;
     const imageHeight = 224;
     const image = inputImage.cover(imageWidth, imageHeight);
-    const tensor = new redisai.Tensor(Dtype.uint8, [imageWidth, imageHeight, 4], Buffer.from(image.bitmap.data));
+    const tensor = new redisai.Tensor(redisai.Dtype.uint8, [imageWidth, imageHeight, 4], Buffer.from(image.bitmap.data));
     
     ///
     // Prepare the DAG enqueuing multiple SCRIPTRUN and MODELRUN commands
