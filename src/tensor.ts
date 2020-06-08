@@ -47,6 +47,21 @@ export class Tensor {
   set data(value: Buffer | number[] | null) {
     this._data = value;
   }
+  //
+  tensorSetFlatArgs(keName: string): any[] {
+    const args: any[] = [keName, this.dtype];
+    this.shape.forEach((value) => args.push(value.toString()));
+    if (this.data != null) {
+      if (this.data instanceof Buffer) {
+        args.push('BLOB');
+        args.push(this.data);
+      } else {
+        args.push('VALUES');
+        this.data.forEach((value) => args.push(value.toString()));
+      }
+    }
+    return args;
+  }
 
   static NewTensorFromTensorGetReply(reply: any[]) {
     let dt = null;
@@ -83,5 +98,9 @@ export class Tensor {
       );
     }
     return new Tensor(dt, shape, values);
+  }
+
+  static tensorGetFlatArgs(keyName: string): string[] {
+    return [keyName, 'META', 'VALUES'];
   }
 }

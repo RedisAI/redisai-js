@@ -4,16 +4,17 @@ import { Model } from './model';
 import * as util from 'util';
 import { Script } from './script';
 import { Stats } from './stats';
+import { Dag } from './dag';
 
 export class Client {
-  private _sendCommand: any;
+  private readonly _sendCommand: any;
 
   constructor(client: RedisClient) {
     this._client = client;
     this._sendCommand = util.promisify(this._client.send_command).bind(this._client);
   }
 
-  private _client: RedisClient;
+  private readonly _client: RedisClient;
 
   get client(): RedisClient {
     return this._client;
@@ -23,23 +24,13 @@ export class Client {
     this._client.end(flush);
   }
 
-  public tensorset(keName: string, t: Tensor): Promise<any> {
-    const args: any[] = [keName, t.dtype];
-    t.shape.forEach((value) => args.push(value.toString()));
-    if (t.data != null) {
-      if (t.data instanceof Buffer) {
-        args.push('BLOB');
-        args.push(t.data);
-      } else {
-        args.push('VALUES');
-        t.data.forEach((value) => args.push(value.toString()));
-      }
-    }
+  public tensorset(keyName: string, t: Tensor): Promise<any> {
+    const args: any[] = t.tensorSetFlatArgs(keyName);
     return this._sendCommand('ai.tensorset', args);
   }
 
-  public tensorget(keName: string): Promise<any> {
-    const args: any[] = [keName, 'META', 'VALUES'];
+  public tensorget(keyName: string): Promise<any> {
+    const args: any[] = Tensor.tensorGetFlatArgs(keyName);
     return this._sendCommand('ai.tensorget', args)
       .then((reply: any[]) => {
         return Tensor.NewTensorFromTensorGetReply(reply);
@@ -55,10 +46,7 @@ export class Client {
   }
 
   public modelrun(modelName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args: any[] = [modelName, 'INPUTS'];
-    inputs.forEach((value) => args.push(value));
-    args.push('OUTPUTS');
-    outputs.forEach((value) => args.push(value));
+    const args: any[] = Model.modelRunFlatArgs(modelName, inputs, outputs);
     return this._sendCommand('ai.modelrun', args);
   }
 
@@ -68,7 +56,7 @@ export class Client {
   }
 
   public modelget(modelName: string): Promise<any> {
-    const args: any[] = [modelName, 'META', 'BLOB'];
+    const args: any[] = Model.modelGetFlatArgs(modelName);
     return this._sendCommand('ai.modelget', args)
       .then((reply: any[]) => {
         return Model.NewModelFromModelGetReply(reply);
@@ -78,22 +66,13 @@ export class Client {
       });
   }
 
-  public scriptset(keName: string, s: Script): Promise<any> {
-    const args: any[] = [keName, s.device];
-    if (s.tag !== undefined) {
-      args.push('TAG');
-      args.push(s.tag);
-    }
-    args.push('SOURCE');
-    args.push(s.script);
+  public scriptset(keyName: string, s: Script): Promise<any> {
+    const args: any[] = s.scriptSetFlatArgs(keyName);
     return this._sendCommand('ai.scriptset', args);
   }
 
   public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Promise<any> {
-    const args: any[] = [scriptName, functionName, 'INPUTS'];
-    inputs.forEach((value) => args.push(value));
-    args.push('OUTPUTS');
-    outputs.forEach((value) => args.push(value));
+    const args: any[] = Script.scriptRunFlatArgs(scriptName, functionName, inputs, outputs);
     return this._sendCommand('ai.scriptrun', args);
   }
 
@@ -103,7 +82,7 @@ export class Client {
   }
 
   public scriptget(scriptName: string): Promise<any> {
-    const args: any[] = [scriptName, 'META', 'SOURCE'];
+    const args: any[] = Script.scriptGetFlatArgs(scriptName);
     return this._sendCommand('ai.scriptget', args)
       .then((reply: any[]) => {
         return Script.NewScriptFromScriptGetReply(reply);
@@ -137,6 +116,40 @@ export class Client {
       });
   }
 
+  /**
+   * specifies a direct acyclic graph of operations to run within RedisAI
+   *
+   * @param loadKeys
+   * @param persistKeys
+   * @param dag
+   */
+  public dagrun(loadKeys: string[] | null, persistKeys: string[] | null, dag: Dag): Promise<any> {
+    const args: any[] = dag.dagRunFlatArgs(loadKeys, persistKeys);
+    return this._sendCommand('ai.dagrun', args)
+      .then((reply: any[]) => {
+        return dag.ProcessDagReply(reply);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
+  }
+
+  /**
+   * specifies a Read Only direct acyclic graph of operations to run within RedisAI
+   *
+   * @param loadKeys
+   * @param dag
+   */
+  public dagrun_ro(loadKeys: string[] | null, dag: Dag): Promise<any> {
+    const args: any[] = dag.dagRunFlatArgs(loadKeys, null);
+    return this._sendCommand('ai.dagrun_ro', args)
+      .then((reply: any[]) => {
+        return dag.ProcessDagReply(reply);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
+  }
   /**
    * Loads the DL/ML backend specified by the backend identifier from path.
    *

@@ -187,7 +187,19 @@ export class Model {
     return model;
   }
 
-  modelSetFlatArgs(keyName: string) {
+  static modelGetFlatArgs(keyName: string): string[] {
+    return [keyName, 'META', 'BLOB'];
+  }
+
+  static modelRunFlatArgs(modelName: string, inputs: string[], outputs: string[]): string[] {
+    const args: string[] = [modelName, 'INPUTS'];
+    inputs.forEach((value) => args.push(value));
+    args.push('OUTPUTS');
+    outputs.forEach((value) => args.push(value));
+    return args;
+  }
+
+  modelSetFlatArgs(keyName: string): any[] {
     const args: any[] = [keyName, this.backend.toString(), this.device];
     if (this.tag !== undefined) {
       args.push('TAG');
