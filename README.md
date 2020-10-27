@@ -7,7 +7,7 @@
 
 ## A high performance node.js RedisAI client
 [![Forum](https://img.shields.io/badge/Forum-RedisAI-blue)](https://forum.redislabs.com/c/modules/redisai)
-[![Gitter](https://badges.gitter.im/RedisLabs/RedisAI.svg)](https://gitter.im/RedisLabs/RedisAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/rTQm7UZ)
 
 You can use this client to query RedisAI using plain Javascript, or in a type-safe manner using Typescript, since redisai-js comes with its own type definitions built-in. 
 
