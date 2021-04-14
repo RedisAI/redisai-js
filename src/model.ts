@@ -30,6 +30,7 @@ export class Model {
     this._blob = blob;
     this._tag = undefined;
     this._batchsize = batchsize || 0;
+    this._protoMaxBulkLength = 536870912;
     if (this._batchsize < 0) {
       this._batchsize = 0;
     }
@@ -104,6 +105,16 @@ export class Model {
     this._blob = value;
   }
 
+  private _protoMaxBulkLength: number;
+
+  get protoMaxBulkLength(): number {
+    return this._protoMaxBulkLength;
+  }
+
+  set protoMaxBulkLength(value: number) {
+    this._protoMaxBulkLength = value;
+  }
+
   private _batchsize: number;
 
   get batchsize(): number {
@@ -124,7 +135,7 @@ export class Model {
     this._minbatchsize = value;
   }
 
-  static NewModelFromModelGetReply(reply: any[]) {
+  static NewModelFromModelGetReply(reply: any[], protoMaxBulkLength?: number) {
     let backend = null;
     let device = null;
     let tag = null;
@@ -181,6 +192,9 @@ export class Model {
       );
     }
     const model = new Model(backend, device, inputs, outputs, blob, batchsize, minbatchsize);
+    if (Number.isFinite(protoMaxBulkLength)) {
+      model.protoMaxBulkLength = protoMaxBulkLength;
+    }
     if (tag !== null) {
       model.tag = tag;
     }
@@ -222,7 +236,17 @@ export class Model {
       this.outputs.forEach((value) => args.push(value));
     }
     args.push('BLOB');
-    args.push(this.blob);
+    const byteLength = Buffer.byteLength(this.blob);
+    if (byteLength <= this._protoMaxBulkLength) {
+      args.push(this.blob);
+    } else {
+      let position = 0;
+      while (position < byteLength) {
+        const from = position;
+        position += this._protoMaxBulkLength;
+        args.push(this.blob.slice(from, position))
+      }
+    }
     return args;
   }
 }

@@ -6,12 +6,21 @@ import { Script } from './script';
 import { Stats } from './stats';
 import { Dag } from './dag';
 
+interface ClientOptions {
+  // https://oss.redislabs.com/redisai/commands/#aimodelset
+  // "Since Redis supports strings up to 512MB, blobs for very large models need to be chunked"
+  protoMaxBulkLength?: number
+}
+
 export class Client {
   private readonly _sendCommand: any;
 
-  constructor(client: RedisClient) {
+  private readonly _protoMaxBulkLength: number;
+
+  constructor(client: RedisClient, { protoMaxBulkLength }: ClientOptions = {}) {
     this._client = client;
     this._sendCommand = util.promisify(this._client.send_command).bind(this._client);
+    this._protoMaxBulkLength = protoMaxBulkLength;
   }
 
   private readonly _client: RedisClient;
@@ -59,7 +68,7 @@ export class Client {
     const args: any[] = Model.modelGetFlatArgs(modelName);
     return this._sendCommand('ai.modelget', args)
       .then((reply: any[]) => {
-        return Model.NewModelFromModelGetReply(reply);
+        return Model.NewModelFromModelGetReply(reply, this._protoMaxBulkLength);
       })
       .catch((error: any) => {
         throw error;

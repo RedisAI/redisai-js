@@ -183,6 +183,20 @@ it(
 );
 
 it(
+  'modelSetFlatArgs chunked model',
+  mochaAsync(async () => {
+    const modelBlobOnnx: Buffer = fs.readFileSync('./tests/test_data/linear_iris.onnx');
+    const modelOnnx = new Model(Backend.ONNX, 'CPU', [], [], modelBlobOnnx);
+    modelOnnx.protoMaxBulkLength = 42;
+    expect(
+      modelOnnx.modelSetFlatArgs('key').slice(4).length
+    ).to.equal(
+      Math.ceil(Buffer.byteLength(modelBlobOnnx) / modelOnnx.protoMaxBulkLength)
+    );
+  }),
+);
+
+it(
   'ai.modelset modelOnnx linear_iris testing',
   mochaAsync(async () => {
     const nativeClient = createClient();
@@ -233,6 +247,8 @@ it(
     aiclient.end(true);
   }),
 );
+
+
 
 it(
   'ai.modelrun positive testing',
