@@ -30,6 +30,7 @@ export class Model {
     this._blob = blob;
     this._tag = undefined;
     this._batchsize = batchsize || 0;
+    this._protoMaxBulkLength = 536870912;
     if (this._batchsize < 0) {
       this._batchsize = 0;
     }
@@ -134,7 +135,7 @@ export class Model {
     this._minbatchsize = value;
   }
 
-  static NewModelFromModelGetReply(reply: any[], protoMaxBulkLength: number = 536870912) {
+  static NewModelFromModelGetReply(reply: any[], protoMaxBulkLength?: number) {
     let backend = null;
     let device = null;
     let tag = null;
@@ -191,7 +192,9 @@ export class Model {
       );
     }
     const model = new Model(backend, device, inputs, outputs, blob, batchsize, minbatchsize);
-    model.protoMaxBulkLength = protoMaxBulkLength;
+    if (Number.isFinite(protoMaxBulkLength)) {
+      model.protoMaxBulkLength = protoMaxBulkLength;
+    }
     if (tag !== null) {
       model.tag = tag;
     }
