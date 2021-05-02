@@ -4,7 +4,7 @@ defaults: &defaults
   working_directory: ~/redisai-js
   docker:
     - image: circleci/node:10.16.3
-    - image: redisai/redisai:edge
+    - image: redislabs/redisai:edge-cpu
 
 jobs:
   build:
