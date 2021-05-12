@@ -203,7 +203,7 @@ export class Model {
         'AI.MODELGET reply did not had the full elements to build the Model. Missing ' + missingArr.join(',') + '.',
       );
     }
-    const model = new Model(backend, device, inputs, outputs, blob, batchsize, minbatchsize);
+    const model = new Model(backend, device, inputs, outputs, blob, batchsize, minbatchsize, minbatchtimeout);
     if (Number.isFinite(protoMaxBulkLength)) {
       model.protoMaxBulkLength = protoMaxBulkLength;
     }
