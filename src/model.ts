@@ -2,6 +2,7 @@
  * Direct mapping to RedisAI Model
  */
 import { Backend, BackendMap } from './backend';
+import { optionalArgument, variadicArgument } from './util';
 
 export class Model {
   /**
@@ -13,6 +14,7 @@ export class Model {
    * @param blob - the Protobuf-serialized model
    * @param batchsize - when provided with an batchsize that is greater than 0, the engine will batch incoming requests from multiple clients that use the model with input tensors of the same shape.
    * @param minbatchsize -  when provided with an minbatchsize that is greater than 0, the engine will postpone calls to AI.MODELRUN until the batch's size had reached minbatchsize
+   * @param minbatchtimeout -  when provided with an minbatchsize that is greater than 0, the engine will postpone calls to AI.MODELRUN until the batch's size had reached minbatchsize
    */
   constructor(
     backend: Backend,
@@ -22,6 +24,7 @@ export class Model {
     blob: Buffer | undefined,
     batchsize?: number,
     minbatchsize?: number,
+    minbatchtimeout?: number
   ) {
     this._backend = backend;
     this._device = device;
@@ -29,15 +32,10 @@ export class Model {
     this._outputs = outputs;
     this._blob = blob;
     this._tag = undefined;
-    this._batchsize = batchsize || 0;
+    this._batchsize = Math.max(batchsize ?? 0, 0);
+    this._minbatchsize = Math.max(minbatchsize ?? 0, 0);
+    this._minbatchtimeout = Math.max(minbatchtimeout ?? 0, 0);
     this._protoMaxBulkLength = 536870912;
-    if (this._batchsize < 0) {
-      this._batchsize = 0;
-    }
-    this._minbatchsize = minbatchsize || 0;
-    if (this._minbatchsize < 0) {
-      this._minbatchsize = 0;
-    }
   }
 
   // tag is an optional string for tagging the model such as a version number or any arbitrary identifier
@@ -135,6 +133,16 @@ export class Model {
     this._minbatchsize = value;
   }
 
+  private _minbatchtimeout: number;
+
+  get minbatchtimeout(): number {
+    return this._minbatchtimeout;
+  }
+
+  set minbatchtimeout(value: number) {
+    this._minbatchtimeout = value;
+  }
+
   static NewModelFromModelGetReply(reply: any[], protoMaxBulkLength?: number) {
     let backend = null;
     let device = null;
@@ -142,6 +150,7 @@ export class Model {
     let blob = null;
     let batchsize: number = 0;
     let minbatchsize: number = 0;
+    let minbatchtimeout: number = 0;
     const inputs: string[] = [];
     const outputs: string[] = [];
     for (let i = 0; i < reply.length; i += 2) {
@@ -167,6 +176,9 @@ export class Model {
           break;
         case 'minbatchsize':
           minbatchsize = parseInt(obj.toString(), 10);
+          break;
+        case 'minbatchtimeout':
+          minbatchtimeout = parseInt(obj.toString(), 10);
           break;
         case 'inputs':
           obj.forEach((input) => inputs.push(input));
@@ -205,6 +217,7 @@ export class Model {
     return [keyName, 'META', 'BLOB'];
   }
 
+  /** @deprecated */
   static modelRunFlatArgs(modelName: string, inputs: string[], outputs: string[]): string[] {
     const args: string[] = [modelName, 'INPUTS'];
     inputs.forEach((value) => args.push(value));
@@ -213,6 +226,33 @@ export class Model {
     return args;
   }
 
+  static modelExecuteFlatArgs(key: string, inputs: string[], outputs: string[], timeout?: number): string[] {
+    return [
+      key,
+      ...variadicArgument('INPUTS', inputs),
+      ...variadicArgument('OUTPUTS', outputs),
+      ...optionalArgument('TIMEOUT', timeout)
+    ];
+  }
+
+  private blobChunks(): Buffer[] {
+    const byteLength = Buffer.byteLength(this.blob);
+    if (byteLength <= this._protoMaxBulkLength) {
+      return [this.blob];
+    }
+
+    const chunks = [];
+    let position = 0;
+    while (position < byteLength) {
+      const from = position;
+      position += this._protoMaxBulkLength;
+      chunks.push(this.blob.slice(from, position))
+    }
+
+    return chunks;
+  }
+
+  /** @deprecated */
   modelSetFlatArgs(keyName: string): any[] {
     const args: any[] = [keyName, this.backend.toString(), this.device];
     if (this.tag !== undefined) {
@@ -247,6 +287,34 @@ export class Model {
         args.push(this.blob.slice(from, position))
       }
     }
+    return args;
+  }
+
+  modelStoreFlatArgs(key: string): (string | Buffer)[] {
+    const args: (string | Buffer)[] = [
+      key,
+      this.backend,
+      this.device,
+      ...optionalArgument('TAG', this.tag)
+    ];
+
+    if (this.batchsize > 0) {
+      args.push('BATCHSIZE', this.batchsize.toString());
+      if (this.minbatchsize > 0) {
+        args.push('MINBATCHSIZE', this.minbatchsize.toString());
+        if (this.minbatchtimeout > 0) {
+          args.push('MINBATCHTIMEOUT', this.minbatchtimeout.toString());
+        }
+      }
+    }
+
+    args.push(
+      ...variadicArgument('INPUTS', this.inputs),
+      ...variadicArgument('OUTPUTS', this.outputs),
+      'BLOB',
+      ...this.blobChunks()
+    );
+
     return args;
   }
 }
