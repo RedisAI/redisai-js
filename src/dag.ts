@@ -10,10 +10,12 @@ export interface DagCommandInterface {
 
   tensorget(keyName: string): DagCommandInterface;
 
+  /** @deprecated */
   modelrun(modelName: string, inputs: string[], outputs: string[]): DagCommandInterface;
 
   modelexecute(modelName: string, inputs: string[], outputs: string[], timeout?: number): DagCommandInterface;
 
+  /** @deprecated */
   scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): DagCommandInterface;
 
   scriptexecute(scriptName: string, functionName: string, options: DagScriptExecuteOptions): DagCommandInterface;

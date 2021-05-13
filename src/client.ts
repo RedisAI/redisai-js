@@ -171,7 +171,7 @@ export class Client {
   /**
    * specifies a direct acyclic graph of operations to run within RedisAI
    */
-  public async dagexecute(options: DagExecuteOptions, dag: Dag): Promise<any> {
+  public async dagexecute(dag: Dag, options: DagExecuteOptions): Promise<any> {
     const args = dag.dagExecuteFlatArgs(options);
     const reply = await this._sendCommand('AI.DAGEXECUTE', args);
     return dag.ProcessDagReply(reply);
@@ -195,7 +195,7 @@ export class Client {
       });
   }
 
-  public async dagexecute_ro(options: DagExecuteReadOnlyOptions, dag: Dag): Promise<any> {
+  public async dagexecute_ro(dag: Dag, options: DagExecuteReadOnlyOptions): Promise<any> {
     const args = dag.dagExecuteReadOnlyFlatArgs(options);
     const reply = await this._sendCommand('AI.DAGEXECUTE_RO', args);
     return dag.ProcessDagReply(reply);

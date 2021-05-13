@@ -903,9 +903,9 @@ it(
     dag.tensorget('tensorC');
 
     // DAG COMMAND
-    const resultDagRun = await aiclient.dagexecute({
+    const resultDagRun = await aiclient.dagexecute(dag, {
         keys: ['mymodel-dag']
-    }, dag);
+    });
     expect(resultDagRun.length).to.equal(4);
     expect(resultDagRun[0]).to.equal('OK');
     expect(resultDagRun[1]).to.equal('OK');
@@ -979,9 +979,9 @@ it(
       .tensorget('tensorC');
 
     // DAG COMMAND
-    const resultDagRun = await aiclient.dagexecute({
+    const resultDagRun = await aiclient.dagexecute(dag, {
         keys: ['mymodel-dag']
-    }, dag);
+    });
     expect(resultDagRun.length).to.equal(4);
     expect(resultDagRun[0]).to.equal('OK');
     expect(resultDagRun[1]).to.equal('OK');
@@ -1056,10 +1056,10 @@ it(
     dag.modelexecute('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC']);
 
     // DAG COMMAND
-    const resultDagRun = await aiclient.dagexecute({
+    const resultDagRun = await aiclient.dagexecute(dag, {
         keys: ['mymodel-dag'],
         persist: ['tensorC']
-    }, dag);
+    });
     expect(resultDagRun.length).to.equal(3);
     expect(resultDagRun[0]).to.equal('OK');
     expect(resultDagRun[1]).to.equal('OK');
@@ -1139,11 +1139,11 @@ it(
     dag.modelexecute('mymodel-dag', ['tensorA', 'tensorB'], ['tensorC']);
 
     // DAG COMMAND
-    const resultDagRun = await aiclient.dagexecute({
+    const resultDagRun = await aiclient.dagexecute(dag, {
         keys: ['mymodel-dag'],
         load: ['tensorA', 'tensorB'],
         persist: ['tensorC']
-    }, dag);
+    });
     expect(resultDagRun.length).to.equal(1);
     expect(resultDagRun[0]).to.equal('OK');
 
@@ -1186,9 +1186,9 @@ it(
 
       dag.modelexecute('dont-exist', ['tensorA'], ['tensorC']);
 
-      await aiclient.dagexecute({
+      await aiclient.dagexecute(dag, {
           keys: ['dont-exist']
-      }, dag);
+      });
     } catch (e) {
       expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
     }
@@ -1226,13 +1226,34 @@ it(
 
       dag.modelexecute('dont-exist', ['tensorA'], ['tensorC']);
 
-      await aiclient.dagexecute_ro({
+      await aiclient.dagexecute_ro(dag, {
           keys: ['dont-exist']
-      }, dag);
+      });
     } catch (e) {
       expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
     }
     aiclient.end(true);
+  }),
+);
+
+it(
+  'ai.dagexecute_ro with scriptexecute should not be allowed',
+  mochaAsync(async () => {
+      const nativeClient = createClient();
+      const aiclient = new Client(nativeClient);
+      try {
+          // DAG Building
+          const dag = new Dag();
+
+          dag.scriptexecute('not', 'allowed');
+
+          await aiclient.dagexecute_ro(dag, {
+              keys: ['not-allowed']
+          });
+      } catch (e) {
+          expect(e.toString()).to.equal('ReplyError: ERR AI.SCRIPTEXECUTE command cannot be specified in a read-only DAG');
+      }
+      aiclient.end(true);
   }),
 );
 
@@ -1329,9 +1350,9 @@ it(
     dag.tensorget('classification');
 
     // DAG COMMAND
-    const resultDagRun = await aiclient.dagexecute({
+    const resultDagRun = await aiclient.dagexecute(dag, {
         keys: ['imagenet_model', 'tensor-image', 'classification']
-    }, dag);
+    });
     expect(resultDagRun.length).to.equal(5);
     expect(resultDagRun[0]).to.equal('OK');
     expect(resultDagRun[1]).to.equal('OK');
