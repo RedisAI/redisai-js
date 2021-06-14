@@ -54,8 +54,12 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build
+      - build:
+          context:
+            - common
       - deploy:
+          context:
+            - common
           requires:
             - build
           filters:
@@ -72,4 +76,6 @@ workflows:
               only:
                 - master
     jobs:
-      - build
+      - build:
+          context:
+            - common
