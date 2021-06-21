@@ -37,7 +37,7 @@
   "homepage": "https://github.com/RedisAI/redisai-js#readme",
   "dependencies": {
     "redis": "^3.1.1",
-    "@types/redis": "^2.8.28"
+    "@types/redis": "^2.8.29"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.8.7",
@@ -45,7 +45,7 @@
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.4",
-    "@types/redis": "^2.8.28",
+    "@types/redis": "^2.8.29",
     "chai": "^4.2.0",
     "codecov": "^3.6.5",
     "core-js": "^2.5.7",
