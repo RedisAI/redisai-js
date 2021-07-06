@@ -23,7 +23,7 @@ export interface DagCommandInterface {
 
 export interface DagExecuteReadOnlyOptions {
   load?: string[];
-  keys?: string[];
+  routing?: string;
   timeout?: number;
 }
 
@@ -119,7 +119,7 @@ export class Dag implements DagCommandInterface {
     const args: string[] = [
       ...variadicArgument('LOAD', options.load),
       ...variadicArgument('PERSIST', options.persist),
-      ...variadicArgument('KEYS', options.keys),
+      ...optionalArgument('ROUTING', options.routing),
       ...optionalArgument('TIMEOUT', options.timeout)
     ];
 
@@ -133,7 +133,7 @@ export class Dag implements DagCommandInterface {
   public dagExecuteReadOnlyFlatArgs(options: DagExecuteReadOnlyOptions): string[] {
     const args: any[] = [
       ...variadicArgument('LOAD', options.load),
-      ...variadicArgument('KEYS', options.keys),
+      ...optionalArgument('ROUTING', options.routing),
       ...optionalArgument('TIMEOUT', options.timeout)
     ];
 

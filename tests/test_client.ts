@@ -904,7 +904,7 @@ it(
 
     // DAG COMMAND
     const resultDagRun = await aiclient.dagexecute(dag, {
-        keys: ['mymodel-dag']
+      routing: 'mymodel-dag'
     });
     expect(resultDagRun.length).to.equal(4);
     expect(resultDagRun[0]).to.equal('OK');
@@ -980,7 +980,7 @@ it(
 
     // DAG COMMAND
     const resultDagRun = await aiclient.dagexecute(dag, {
-        keys: ['mymodel-dag']
+      routing: 'mymodel-dag'
     });
     expect(resultDagRun.length).to.equal(4);
     expect(resultDagRun[0]).to.equal('OK');
@@ -1057,8 +1057,8 @@ it(
 
     // DAG COMMAND
     const resultDagRun = await aiclient.dagexecute(dag, {
-        keys: ['mymodel-dag'],
-        persist: ['tensorC']
+      routing: 'mymodel-dag',
+      persist: ['tensorC']
     });
     expect(resultDagRun.length).to.equal(3);
     expect(resultDagRun[0]).to.equal('OK');
@@ -1140,9 +1140,9 @@ it(
 
     // DAG COMMAND
     const resultDagRun = await aiclient.dagexecute(dag, {
-        keys: ['mymodel-dag'],
-        load: ['tensorA', 'tensorB'],
-        persist: ['tensorC']
+      routing: 'mymodel-dag',
+      load: ['tensorA', 'tensorB'],
+      persist: ['tensorC']
     });
     expect(resultDagRun.length).to.equal(1);
     expect(resultDagRun[0]).to.equal('OK');
@@ -1187,7 +1187,7 @@ it(
       dag.modelexecute('dont-exist', ['tensorA'], ['tensorC']);
 
       await aiclient.dagexecute(dag, {
-          keys: ['dont-exist']
+        routing: 'dont-exist'
       });
     } catch (e) {
       expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
@@ -1227,7 +1227,7 @@ it(
       dag.modelexecute('dont-exist', ['tensorA'], ['tensorC']);
 
       await aiclient.dagexecute_ro(dag, {
-          keys: ['dont-exist']
+        routing: 'dont-exist'
       });
     } catch (e) {
       expect(e.toString()).to.equal('ReplyError: ERR model key is empty');
@@ -1248,7 +1248,7 @@ it(
           dag.scriptexecute('not', 'allowed');
 
           await aiclient.dagexecute_ro(dag, {
-              keys: ['not-allowed']
+            routing: 'not-allowed'
           });
       } catch (e) {
           expect(e.toString()).to.equal('ReplyError: ERR AI.SCRIPTEXECUTE command cannot be specified in a read-only DAG');
@@ -1351,7 +1351,7 @@ it(
 
     // DAG COMMAND
     const resultDagRun = await aiclient.dagexecute(dag, {
-        keys: ['imagenet_model', 'tensor-image', 'classification']
+      routing: 'imagenet_model'
     });
     expect(resultDagRun.length).to.equal(5);
     expect(resultDagRun[0]).to.equal('OK');
