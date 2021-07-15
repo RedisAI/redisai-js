@@ -5,13 +5,12 @@ import { optionalArgument, variadicArgument } from './util';
 
 export interface DagScriptExecuteOptions {
   inputs?: string[];
-  listInput?: string[];
+  args?: string[];
   outputs?: string[];
-}
-
-export interface ScriptExecuteOptions extends DagScriptExecuteOptions {
-  keys: string[];
   timeout?: number;
+}
+export interface ScriptExecuteOptions extends DagScriptExecuteOptions {
+  keys?: string[];
 }
 
 export class Script {
@@ -125,8 +124,9 @@ export class Script {
       key,
       functionName,
       ...variadicArgument('INPUTS', options?.inputs),
-      ...variadicArgument('LIST_INPUT', options?.listInput),
-      ...variadicArgument('OUTPUTS', options?.outputs)
+      ...variadicArgument('ARGS', options?.args),
+      ...variadicArgument('OUTPUTS', options?.outputs),
+      ...optionalArgument('TIMEOUT', options?.timeout)
     ];
   }
 
@@ -136,7 +136,7 @@ export class Script {
       functionName,
       ...variadicArgument('KEYS', options.keys),
       ...variadicArgument('INPUTS', options.inputs),
-      ...variadicArgument('LIST_INPUT', options.listInput),
+      ...variadicArgument('ARGS', options.args),
       ...variadicArgument('OUTPUTS', options.outputs),
       ...optionalArgument('TIMEOUT', options.timeout)
     ];
