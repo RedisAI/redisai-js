@@ -1,6 +1,17 @@
 /**
  * Direct mapping to RedisAI Script
  */
+import { optionalArgument, variadicArgument } from './util';
+
+export interface DagScriptExecuteOptions {
+  inputs?: string[];
+  args?: string[];
+  outputs?: string[];
+  timeout?: number;
+}
+export interface ScriptExecuteOptions extends DagScriptExecuteOptions {
+  keys?: string[];
+}
 
 export class Script {
   /**
@@ -99,6 +110,7 @@ export class Script {
     return args;
   }
 
+  /** @deprecated */
   static scriptRunFlatArgs(scriptName: string, functionName: string, inputs: string[], outputs: string[]): string[] {
     const args: string[] = [scriptName, functionName, 'INPUTS'];
     inputs.forEach((value) => args.push(value));
@@ -107,8 +119,30 @@ export class Script {
     return args;
   }
 
+  static dagScriptExecuteFlatArgs(key: string, functionName: string, options?: DagScriptExecuteOptions): string[] {
+    return [
+      key,
+      functionName,
+      ...variadicArgument('INPUTS', options?.inputs),
+      ...variadicArgument('ARGS', options?.args),
+      ...variadicArgument('OUTPUTS', options?.outputs),
+      ...optionalArgument('TIMEOUT', options?.timeout)
+    ];
+  }
+
+  static scriptExecuteFlatArgs(key: string, functionName: string, options: ScriptExecuteOptions): string[] {
+    return [
+      key,
+      functionName,
+      ...variadicArgument('KEYS', options.keys),
+      ...variadicArgument('INPUTS', options.inputs),
+      ...variadicArgument('ARGS', options.args),
+      ...variadicArgument('OUTPUTS', options.outputs),
+      ...optionalArgument('TIMEOUT', options.timeout)
+    ];
+  }
+
   static scriptGetFlatArgs(scriptName: string): string[] {
-    const args: string[] = [scriptName, 'META', 'SOURCE'];
-    return args;
+    return [scriptName, 'META', 'SOURCE'];
   }
 }

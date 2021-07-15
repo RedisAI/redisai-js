@@ -2,9 +2,9 @@ import { RedisClient } from 'redis';
 import { Tensor } from './tensor';
 import { Model } from './model';
 import * as util from 'util';
-import { Script } from './script';
+import { Script, ScriptExecuteOptions } from './script';
 import { Stats } from './stats';
-import { Dag } from './dag';
+import { Dag, DagExecuteOptions, DagExecuteReadOnlyOptions } from './dag';
 
 interface ClientOptions {
   // https://oss.redislabs.com/redisai/commands/#aimodelset
@@ -49,14 +49,30 @@ export class Client {
       });
   }
 
+  /**
+   * @deprecated since 1.2, use modelstore instead
+   */
   public modelset(keyName: string, m: Model): Promise<any> {
     const args: any[] = m.modelSetFlatArgs(keyName);
     return this._sendCommand('ai.modelset', args);
   }
 
+  public modelstore(key: string, m: Model): Promise<any> {
+    const args: any[] = m.modelStoreFlatArgs(key);
+    return this._sendCommand('ai.modelstore', args);
+  }
+
+  /**
+   * @deprecated since 1.2, use modelexecute instead
+   */
   public modelrun(modelName: string, inputs: string[], outputs: string[]): Promise<any> {
     const args: any[] = Model.modelRunFlatArgs(modelName, inputs, outputs);
     return this._sendCommand('ai.modelrun', args);
+  }
+
+  public modelexecute(key: string, inputs: string[], outputs: string[], timeout?: number): Promise<any> {
+    const args: string[] = Model.modelExecuteFlatArgs(key, inputs, outputs, timeout);
+    return this._sendCommand('ai.modelexecute', args);
   }
 
   public modeldel(modelName: string): Promise<any> {
@@ -80,9 +96,17 @@ export class Client {
     return this._sendCommand('ai.scriptset', args);
   }
 
+  /**
+   * @deprecated since 1.2, use scriptexecute instead
+   */
   public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Promise<any> {
     const args: any[] = Script.scriptRunFlatArgs(scriptName, functionName, inputs, outputs);
     return this._sendCommand('ai.scriptrun', args);
+  }
+
+  public scriptexecute(key: string, functionName: string, options: ScriptExecuteOptions): Promise<any> {
+    const args: string[] = Script.scriptExecuteFlatArgs(key, functionName, options);
+    return this._sendCommand('ai.scriptexecute', args);
   }
 
   public scriptdel(scriptName: string): Promise<any> {
@@ -127,6 +151,7 @@ export class Client {
 
   /**
    * specifies a direct acyclic graph of operations to run within RedisAI
+   * @deprecated since 1.2, use dagexecute instead
    *
    * @param loadKeys
    * @param persistKeys
@@ -144,7 +169,17 @@ export class Client {
   }
 
   /**
+   * specifies a direct acyclic graph of operations to run within RedisAI
+   */
+  public async dagexecute(dag: Dag, options: DagExecuteOptions): Promise<any> {
+    const args = dag.dagExecuteFlatArgs(options);
+    const reply = await this._sendCommand('AI.DAGEXECUTE', args);
+    return dag.ProcessDagReply(reply);
+  }
+
+  /**
    * specifies a Read Only direct acyclic graph of operations to run within RedisAI
+   * @deprecated since 1.2, use dagexecute_ro instead
    *
    * @param loadKeys
    * @param dag
@@ -159,6 +194,13 @@ export class Client {
         throw error;
       });
   }
+
+  public async dagexecute_ro(dag: Dag, options: DagExecuteReadOnlyOptions): Promise<any> {
+    const args = dag.dagExecuteReadOnlyFlatArgs(options);
+    const reply = await this._sendCommand('AI.DAGEXECUTE_RO', args);
+    return dag.ProcessDagReply(reply);
+  }
+
   /**
    * Loads the DL/ML backend specified by the backend identifier from path.
    *

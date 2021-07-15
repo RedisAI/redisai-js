@@ -1,6 +1,7 @@
 import { Model } from './model';
-import { Script } from './script';
+import { DagScriptExecuteOptions, Script } from './script';
 import { Tensor } from './tensor';
+import { optionalArgument, variadicArgument } from './util';
 
 export interface DagCommandInterface {
   tensorset(keyName: string, t: Tensor): DagCommandInterface;
@@ -9,9 +10,25 @@ export interface DagCommandInterface {
 
   tensorget(keyName: string): DagCommandInterface;
 
+  /** @deprecated */
   modelrun(modelName: string, inputs: string[], outputs: string[]): DagCommandInterface;
 
+  modelexecute(modelName: string, inputs: string[], outputs: string[], timeout?: number): DagCommandInterface;
+
+  /** @deprecated */
   scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): DagCommandInterface;
+
+  scriptexecute(scriptName: string, functionName: string, options: DagScriptExecuteOptions): DagCommandInterface;
+}
+
+export interface DagExecuteReadOnlyOptions {
+  load?: string[];
+  routing?: string;
+  timeout?: number;
+}
+
+export interface DagExecuteOptions extends DagExecuteReadOnlyOptions {
+  persist?: string[];
 }
 
 /**
@@ -42,6 +59,7 @@ export class Dag implements DagCommandInterface {
     return this;
   }
 
+  /** @deprecated */
   public modelrun(modelName: string, inputs: string[], outputs: string[]): Dag {
     const args: any[] = ['AI.MODELRUN'];
     Model.modelRunFlatArgs(modelName, inputs, outputs).forEach((arg) => args.push(arg));
@@ -50,6 +68,16 @@ export class Dag implements DagCommandInterface {
     return this;
   }
 
+  public modelexecute(modelName: string, inputs: string[], outputs: string[], timeout?: number): Dag {
+    this._commands.push([
+      'AI.MODELEXECUTE',
+      ...Model.modelExecuteFlatArgs(modelName, inputs, outputs, timeout)
+    ]);
+    this._tensorgetflag.push(false);
+    return this;
+  }
+
+  /** @deprecated */
   public scriptrun(scriptName: string, functionName: string, inputs: string[], outputs: string[]): Dag {
     const args: any[] = ['AI.SCRIPTRUN'];
     Script.scriptRunFlatArgs(scriptName, functionName, inputs, outputs).forEach((arg) => args.push(arg));
@@ -58,6 +86,16 @@ export class Dag implements DagCommandInterface {
     return this;
   }
 
+  public scriptexecute(scriptName: string, functionName: string, options?: DagScriptExecuteOptions): Dag {
+    this._commands.push([
+      'AI.SCRIPTEXECUTE',
+      ...Script.dagScriptExecuteFlatArgs(scriptName, functionName, options)
+    ]);
+    this._tensorgetflag.push(false);
+    return this;
+  }
+
+  /** @deprecated */
   public dagRunFlatArgs(loadKeys: string[] | null, persistKeys: string[] | null): string[] {
     const args: any[] = [];
     if (loadKeys != null && loadKeys.length > 0) {
@@ -74,6 +112,35 @@ export class Dag implements DagCommandInterface {
       args.push('|>');
       value.forEach((arg) => args.push(arg));
     });
+    return args;
+  }
+
+  public dagExecuteFlatArgs(options: DagExecuteOptions): string[] {
+    const args: string[] = [
+      ...variadicArgument('LOAD', options.load),
+      ...variadicArgument('PERSIST', options.persist),
+      ...optionalArgument('ROUTING', options.routing),
+      ...optionalArgument('TIMEOUT', options.timeout)
+    ];
+
+    for (const command of this._commands) {
+      args.push('|>', ...command);
+    }
+
+    return args;
+  }
+
+  public dagExecuteReadOnlyFlatArgs(options: DagExecuteReadOnlyOptions): string[] {
+    const args: any[] = [
+      ...variadicArgument('LOAD', options.load),
+      ...optionalArgument('ROUTING', options.routing),
+      ...optionalArgument('TIMEOUT', options.timeout)
+    ];
+
+    for (const command of this._commands) {
+      args.push('|>', ...command);
+    }
+
     return args;
   }
 
