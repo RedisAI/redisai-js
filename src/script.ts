@@ -7,10 +7,10 @@ export interface DagScriptExecuteOptions {
   inputs?: string[];
   args?: string[];
   outputs?: string[];
-  timeout?: number;
 }
 export interface ScriptExecuteOptions extends DagScriptExecuteOptions {
   keys?: string[];
+  timeout?: number;
 }
 
 export class Script {
@@ -125,8 +125,7 @@ export class Script {
       functionName,
       ...variadicArgument('INPUTS', options?.inputs),
       ...variadicArgument('ARGS', options?.args),
-      ...variadicArgument('OUTPUTS', options?.outputs),
-      ...optionalArgument('TIMEOUT', options?.timeout)
+      ...variadicArgument('OUTPUTS', options?.outputs)
     ];
   }
 
