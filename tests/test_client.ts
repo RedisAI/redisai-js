@@ -176,7 +176,7 @@ it(
     try {
       const result = await aiclient.tensorget('dontexist');
     } catch (e) {
-      expect(e.toString()).to.equal('ReplyError: ERR tensor key is empty');
+      expect(e.toString()).to.equal('ReplyError: ERR tensor key is empty or in a different shard');
     }
     aiclient.end(true);
   }),
