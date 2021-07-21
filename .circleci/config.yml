@@ -4,7 +4,7 @@ defaults: &defaults
   working_directory: ~/redisai-js
   docker:
     - image: circleci/node:10.16.3
-    - image: redislabs/redisai:edge-cpu
+    - image: redislabs/redisai:edge-cpu-bionic
 
 jobs:
   build:
@@ -25,6 +25,7 @@ jobs:
             - ./node_modules
       - run:
           name: test
+          no_output_timeout: 20m
           command: npm test
 
       - run:
@@ -37,31 +38,13 @@ jobs:
       - store_test_results:
           path: test-results.xml
 
-  deploy:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/redisai-js
-      - run:
-          name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/redisai-js/.npmrc
-      - run:
-          name: Publish package
-          command: npm publish
-
 workflows:
   version: 2
   commit:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      - build:
+          context:
+            - common
   nightly:
     triggers:
       - schedule:
@@ -71,4 +54,6 @@ workflows:
               only:
                 - master
     jobs:
-      - build
+      - build:
+          context:
+            - common
