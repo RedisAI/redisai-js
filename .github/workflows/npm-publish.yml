@@ -1,6 +1,5 @@
 on:
-  release:
-    types: [published]
+  push:
 
 jobs:
   publish:
@@ -12,7 +11,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: get version from tag
         id: get_version
@@ -43,6 +42,6 @@ jobs:
           prop_path: version
 
       - name: publish to npm
-        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}}
+        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}} --dry-run
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
