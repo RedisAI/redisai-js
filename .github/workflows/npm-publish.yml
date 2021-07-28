@@ -44,7 +44,7 @@ jobs:
           prop_path: version
 
       - name: echo tag to be used
-        run: echo ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.VERSION}}
+        run: echo ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}}
 
 #      - name: publish to npm
 #        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.VERSION}}
