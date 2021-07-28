@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.ts\"  \"tests/**/*.ts\" ",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "prepublishOnly": "npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "test": "tsc && nyc --reporter=html --reporter=text mocha --timeout 90000 --require ts-node/register --require source-map-support/register --recursive tests/**",
@@ -36,8 +36,8 @@
   },
   "homepage": "https://github.com/RedisAI/redisai-js#readme",
   "dependencies": {
-    "redis": "^3.1.1",
-    "@types/redis": "^2.8.28"
+    "redis": "^3.1.2",
+    "@types/redis": "^2.8.29"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.8.7",
@@ -45,7 +45,7 @@
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.4",
-    "@types/redis": "^2.8.28",
+    "@types/redis": "^2.8.29",
     "chai": "^4.2.0",
     "codecov": "^3.6.5",
     "core-js": "^2.5.7",
