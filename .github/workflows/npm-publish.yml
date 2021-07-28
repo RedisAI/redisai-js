@@ -1,7 +1,7 @@
 on:
   push:
-    tags:
-      - '*'
+#  release:
+#    types: [published]
 
 jobs:
   publish:
@@ -22,7 +22,31 @@ jobs:
             realversion="${realversion//v/}"
             echo "::set-output name=VERSION::$realversion"
 
-      - name: publish to npm
-        run: npm publish --tag ${{steps.get_version.outputs.VERSION}}
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Set version from tag
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: package.json
+          field: version
+          value: ${{steps.get_version.outputs.VERSION}}
+
+      - name: Read project name
+        uses: notiz-dev/github-action-json-property@release
+        id: get_package_json
+        with:
+          path: package.json
+          prop_path: name
+
+      - name: Read project version
+        uses: notiz-dev/github-action-json-property@release
+        id: get_package_version
+        with:
+          path: package.json
+          prop_path: version
+
+      - name: echo tag to be used
+        run: echo ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.VERSION}}
+
+#      - name: publish to npm
+#        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.VERSION}}
+#        env:
+#          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
