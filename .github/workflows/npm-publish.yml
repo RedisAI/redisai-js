@@ -43,5 +43,5 @@ jobs:
 
       - name: publish to npm
         run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}} --dry-run
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+        #env:
+        #  NPM_TOKEN: ${{secrets.NPM_TOKEN}}
