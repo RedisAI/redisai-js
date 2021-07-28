@@ -12,7 +12,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: get version from tag
         id: get_version
@@ -41,6 +41,9 @@ jobs:
         with:
           path: package.json
           prop_path: version
+
+      - name: npm install
+        run: npm install
 
       - name: publish to npm
         run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}}
