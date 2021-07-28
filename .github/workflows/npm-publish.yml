@@ -1,7 +1,6 @@
 on:
-  push:
-#  release:
-#    types: [published]
+  release:
+    types: [published]
 
 jobs:
   publish:
@@ -18,7 +17,8 @@ jobs:
       - name: get version from tag
         id: get_version
         run: |
-            realversion="155.155.155"
+            realversion="${GITHUB_REF/refs\/tags\//}"
+            realversion="${realversion//v/}"
             echo "::set-output name=VERSION::$realversion"
 
       - name: Set version from tag
@@ -42,10 +42,7 @@ jobs:
           path: package.json
           prop_path: version
 
-      - name: echo tag to be used
-        run: echo ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}}
-
-#      - name: publish to npm
-#        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.VERSION}}
-#        env:
-#          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: publish to npm
+        run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}}
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
