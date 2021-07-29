@@ -48,7 +48,6 @@ jobs:
       - name: npm login
         run: |
           npm config set //registry.npmjs.org/:_authToken ${{secrets.NPM_TOKEN}}
-          npm publish --ignore-scripts
 
       - name: publish to npm
         run: npm publish . --tag ${{steps.get_package_json.outputs.prop}}@${{steps.get_package_version.outputs.prop}} --ignore-scripts
