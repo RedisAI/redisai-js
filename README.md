@@ -2,14 +2,13 @@
 [![CircleCI](https://circleci.com/gh/RedisAI/redisai-js/tree/master.svg?style=svg)](https://circleci.com/gh/RedisAI/redisai-js/tree/master)
 [![npm version](https://badge.fury.io/js/redisai-js.svg)](https://badge.fury.io/js/redisai-js)
 [![codecov](https://codecov.io/gh/RedisAI/redisai-js/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisAI/redisai-js)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/RedisAI/redisai-js.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/RedisAI/redisai-js/context:javascript)
 [![Known Vulnerabilities](https://snyk.io/test/github/RedisAI/redisai-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/RedisAI/redisai-js?targetFile=package.json)
 
 ## A high performance node.js RedisAI client
 [![Forum](https://img.shields.io/badge/Forum-RedisAI-blue)](https://forum.redislabs.com/c/modules/redisai)
 [![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/rTQm7UZ)
 
-You can use this client to query RedisAI using plain Javascript, or in a type-safe manner using Typescript, since redisai-js comes with its own type definitions built-in. 
+You can use this client to query RedisAI using plain Javascript, or in a type-safe manner using Typescript, since redisai-js comes with its own type definitions built-in.
 
 ## Installation
 
@@ -127,11 +126,11 @@ Example of AI.SCRIPTSET and AI.SCRIPTRUN
 
 Example of AI.DAGRUN enqueuing multiple SCRIPTRUN and MODELRUN commands
 
-A common pattern is enqueuing multiple SCRIPTRUN and MODELRUN commands within a DAG. The following example uses ResNet-50,to classify images into 1000 object categories. 
+A common pattern is enqueuing multiple SCRIPTRUN and MODELRUN commands within a DAG. The following example uses ResNet-50,to classify images into 1000 object categories.
 
-Given that our input tensor contains each color represented as a 8-bit integer and that neural networks usually work with floating-point tensors as their input we need to cast a tensor to floating-point and normalize the values of the pixels - for that we will use `pre_process_4ch` function. 
+Given that our input tensor contains each color represented as a 8-bit integer and that neural networks usually work with floating-point tensors as their input we need to cast a tensor to floating-point and normalize the values of the pixels - for that we will use `pre_process_4ch` function.
 
-To optimize the classification process we can use a post process script to return only the category position with the maximum classification - for that we will use `post_process` script. 
+To optimize the classification process we can use a post process script to return only the category position with the maximum classification - for that we will use `post_process` script.
 
 Using the DAG capabilities we've removed the necessity of storing the intermediate tensors in the keyspace. You can even run the entire process without storing the output tensor, as follows:
 
@@ -157,7 +156,7 @@ var Jimp = require('jimp');
     const modelBlob = fs.readFileSync('./tests/test_data/imagenet/resnet50.pb');
     const imagenetModel = new redisai.Model(redisai.Backend.TF, 'CPU', ['images'], ['output'], modelBlob);
     const resultModelSet = await aiclient.modelset('imagenet_model', imagenetModel);
-    
+
     // AI.MODELSET result: OK
     console.log(`AI.MODELSET result: ${resultModelSet}`)
 
@@ -166,11 +165,11 @@ var Jimp = require('jimp');
     const imageHeight = 224;
     const image = inputImage.cover(imageWidth, imageHeight);
     const tensor = new redisai.Tensor(redisai.Dtype.uint8, [imageWidth, imageHeight, 4], Buffer.from(image.bitmap.data));
-    
+
     ///
     // Prepare the DAG enqueuing multiple SCRIPTRUN and MODELRUN commands
     const dag = new redisai.Dag();
-    
+
     dag.tensorset('tensor-image', tensor);
     dag.scriptrun('data_processing_script', 'pre_process_4ch', ['tensor-image'], ['temp_key1']);
     dag.modelrun('imagenet_model', ['temp_key1'], ['temp_key2']);
@@ -179,10 +178,10 @@ var Jimp = require('jimp');
 
     // Send the AI.DAGRUN command to RedisAI server
     const resultDagRun = await aiclient.dagrun_ro(null, dag);
-    
-    // The 5th element of the reply will be the `classification` tensor 
+
+    // The 5th element of the reply will be the `classification` tensor
     const classTensor = resultDagRun[4];
-    
+
     // Print the category in the position with the max classification
     const idx = classTensor.data[0];
 
@@ -196,7 +195,7 @@ var Jimp = require('jimp');
 ### Further examples
 
 The [RedisAI examples repo](https://github.com/RedisAI/redisai-examples) shows more advanced examples
-made using redisai-js under [js_client](https://github.com/RedisAI/redisai-examples/tree/master/js_client) folder. 
+made using redisai-js under [js_client](https://github.com/RedisAI/redisai-examples/tree/master/js_client) folder.
 
 
 ### Supported RedisAI Commands
@@ -214,7 +213,7 @@ AI.SCRIPTSET | scriptset
 AI.SCRIPTGET | scriptget
 AI.SCRIPTDEL | scriptdel
 AI.SCRIPTRUN | scriptrun
-AI._SCRIPTSCAN | N/A  
+AI._SCRIPTSCAN | N/A
 AI.DAGRUN | dagrun
 AI.DAGRUN_RO | dagrun_ro
 AI.INFO | info and infoResetStat (for resetting stats)
